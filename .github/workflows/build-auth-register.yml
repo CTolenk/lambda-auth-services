@@ -31,16 +31,13 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: lambdas/auth-register
+        run: npm ci --workspaces --include-workspace-root
 
       - name: Build Lambda
-        run: npx esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/index.js
-        working-directory: lambdas/auth-register
+        run: npm run build --workspace lambda-auth-register
 
       - name: Zip Lambda
-        run: zip -j function.zip dist/index.js
-        working-directory: lambdas/auth-register
+        run: npm run zip --workspace lambda-auth-register
 
       - name: Generate source code hash
         id: hash
