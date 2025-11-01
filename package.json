@@ -1,0 +1,11 @@
+{
+  "name": "lambda-skeleton",
+  "private": true,
+  "workspaces": [
+    "infrastructure",
+    "lambdas/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces"
+  }
+}

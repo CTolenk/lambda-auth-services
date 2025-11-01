@@ -35,7 +35,7 @@ jobs:
         working-directory: lambdas/auth-login
 
       - name: Build Lambda
-        run: npx esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/index.js
+        run: npx esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js
         working-directory: lambdas/auth-login
 
       - name: Zip Lambda

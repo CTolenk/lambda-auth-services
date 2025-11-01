@@ -2,3 +2,4 @@ node_modules/
 dist/
 function.zip
 .idea/
+dist-tests/

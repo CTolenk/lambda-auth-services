@@ -1,0 +1,45 @@
+import { UserRepository } from '@shared/domain/ports/user-repository.port';
+import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
+import { LoginUserRequest } from '../../domain/value-objects/login-user-request.vo';
+import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error';
+import { User } from '@shared/domain/entities/user.entity';
+
+interface LoginUserResult {
+  id: string;
+  email: string;
+}
+
+export class LoginUserUseCase {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly passwordHasher: PasswordHasher
+  ) {}
+
+  async execute(request: LoginUserRequest): Promise<LoginUserResult> {
+    const user = await this.userRepository.findByEmail(request.email);
+
+    if (!user) {
+      throw new InvalidCredentialsError();
+    }
+
+    const passwordMatches = await this.passwordHasher.verify(
+      request.password,
+      user.passwordHash
+    );
+
+    if (!passwordMatches) {
+      throw new InvalidCredentialsError();
+    }
+
+    return this.mapToResult(user);
+  }
+
+  private mapToResult(user: User): LoginUserResult {
+    return {
+      id: user.id,
+      email: user.email
+    };
+  }
+}
+
+export type { LoginUserResult };
