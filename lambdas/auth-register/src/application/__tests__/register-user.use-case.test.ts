@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { RegisterUserUseCase } from '../use-cases/register-user.use-case';
-import { UserRepository } from '../../domain/ports/user-repository.port';
-import { PasswordHasher } from '../../domain/ports/password-hasher.port';
+import { UserRepository } from '@shared/domain/ports/user-repository.port';
+import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
 import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
 import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
-import { User } from '../../domain/entities/user.entity';
+import { User } from '@shared/domain/entities/user.entity';
 import { RegisterUserRequest } from '../../domain/value-objects/register-user-request.vo';
 
 class UserRepositorySpy implements UserRepository {
@@ -26,10 +26,17 @@ class UserRepositorySpy implements UserRepository {
 class PasswordHasherSpy implements PasswordHasher {
   public hashCalls: string[] = [];
   public hashReturnValue = 'hashed-password';
+  public verifyCalls: Array<{ plainText: string; hashed: string }> = [];
+  public verifyReturnValue = true;
 
   async hash(plainText: string): Promise<string> {
     this.hashCalls.push(plainText);
     return this.hashReturnValue;
+  }
+
+  async verify(plainText: string, hashed: string): Promise<boolean> {
+    this.verifyCalls.push({ plainText, hashed });
+    return this.verifyReturnValue;
   }
 }
 

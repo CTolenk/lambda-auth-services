@@ -3,9 +3,9 @@
 Lambda-oriented authentication service following a hexagonal architecture. Each Lambda lives in `lambdas/` with shared utilities under `lambdas/shared/`.
 
 ## Local Development
-- Install deps per Lambda: `cd lambdas/auth-register && npm install`.
+- Install deps per Lambda: `cd lambdas/<lambda> && npm install` (`auth-register` and `auth-login` ship identical scripts).
 - Build handler bundle: `npm run build`.
-- Run tests: `npm test`.
+- Run tests: `npm test` (compiles specs with TypeScript and runs them via Node’s test runner; shared adapters are linked automatically for alias resolution).
 - Local entrypoint (`npm start`) builds and invokes `dist/index.js`, auto-setting:
   - `USERS_TABLE_NAME=auth-users-local` (unless already defined)
   - `AWS_REGION=us-east-1` (unless already defined)

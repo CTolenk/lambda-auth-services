@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DynamoDbUserRepository } from '../dynamodb-user.repository';
-import { User } from '../../../../domain/entities/user.entity';
+import { DynamoDbUserRepository } from '@shared/infrastructure/dynamodb/dynamodb-user.repository';
+import { User } from '@shared/domain/entities/user.entity';
 
 type PutParams = {
   TableName: string;

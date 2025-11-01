@@ -1,8 +1,8 @@
-import { UserRepository } from '../../domain/ports/user-repository.port';
-import { PasswordHasher } from '../../domain/ports/password-hasher.port';
+import { UserRepository } from '@shared/domain/ports/user-repository.port';
+import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
 import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
 import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
-import { User } from '../../domain/entities/user.entity';
+import { User } from '@shared/domain/entities/user.entity';
 import { RegisterUserRequest } from '../../domain/value-objects/register-user-request.vo';
 
 interface RegisterUserResult {

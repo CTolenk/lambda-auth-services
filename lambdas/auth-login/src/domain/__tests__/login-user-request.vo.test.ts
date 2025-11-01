@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RegisterUserRequest } from '../value-objects/register-user-request.vo';
+import { LoginUserRequest } from '../value-objects/login-user-request.vo';
 import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
 import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
 
-test('creates a request with normalized email', () => {
-  const request = RegisterUserRequest.create({
-    email: '  USER@example.COM ',
+test('normalizes email and keeps password intact', () => {
+  const request = LoginUserRequest.create({
+    email: ' User@Example.com ',
     password: 'Secret123'
   });
 
@@ -14,10 +14,10 @@ test('creates a request with normalized email', () => {
   assert.equal(request.password, 'Secret123');
 });
 
-test('throws InvalidEmailError when email is missing', () => {
+test('throws InvalidEmailError when email is not provided', () => {
   assert.throws(
     () =>
-      RegisterUserRequest.create({
+      LoginUserRequest.create({
         email: '   ',
         password: 'Secret123'
       }),
@@ -28,7 +28,7 @@ test('throws InvalidEmailError when email is missing', () => {
 test('throws InvalidEmailError when email format is invalid', () => {
   assert.throws(
     () =>
-      RegisterUserRequest.create({
+      LoginUserRequest.create({
         email: 'invalid-email',
         password: 'Secret123'
       }),
@@ -39,7 +39,7 @@ test('throws InvalidEmailError when email format is invalid', () => {
 test('throws InvalidPasswordError when password is too short', () => {
   assert.throws(
     () =>
-      RegisterUserRequest.create({
+      LoginUserRequest.create({
         email: 'user@example.com',
         password: 'short'
       }),

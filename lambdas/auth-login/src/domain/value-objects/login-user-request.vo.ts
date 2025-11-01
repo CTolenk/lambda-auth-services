@@ -1,24 +1,23 @@
 import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
 import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
 
-interface RegisterUserProps {
+interface LoginUserProps {
   email: unknown;
   password: unknown;
 }
 
-const EMAIL_REGEX =
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export class RegisterUserRequest {
+export class LoginUserRequest {
   private constructor(
     private readonly props: { email: string; password: string }
   ) {}
 
-  static create(props: RegisterUserProps): RegisterUserRequest {
-    const email = RegisterUserRequest.validateEmail(props.email);
-    const password = RegisterUserRequest.validatePassword(props.password);
+  static create(props: LoginUserProps): LoginUserRequest {
+    const email = LoginUserRequest.validateEmail(props.email);
+    const password = LoginUserRequest.validatePassword(props.password);
 
-    return new RegisterUserRequest({ email, password });
+    return new LoginUserRequest({ email, password });
   }
 
   get email(): string {

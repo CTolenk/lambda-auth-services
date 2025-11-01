@@ -1,6 +1,6 @@
-import { UserRepository } from '../../../domain/ports/user-repository.port';
-import { User } from '../../../domain/entities/user.entity';
-import { DocumentClientLike } from '@shared/domain/ports/document-client-factory.port';
+import { DocumentClientLike } from '../../domain/ports/document-client-factory.port';
+import { UserRepository } from '../../domain/ports/user-repository.port';
+import { User } from '../../domain/entities/user.entity';
 
 export class DynamoDbUserRepository implements UserRepository {
   constructor(

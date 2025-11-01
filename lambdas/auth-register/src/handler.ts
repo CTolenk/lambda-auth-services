@@ -1,12 +1,12 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
-import { DynamoDbUserRepository } from './infrastructure/adapters/dynamodb/dynamodb-user.repository';
-import { CryptoPasswordHasher } from './infrastructure/adapters/crypto/password-hasher.adapter';
+import { DynamoDbUserRepository } from '@shared/infrastructure/dynamodb/dynamodb-user.repository';
+import { CryptoPasswordHasher } from '@shared/infrastructure/crypto/password-hasher.adapter';
 import { CryptoUuidGenerator } from './infrastructure/adapters/uuid/uuid-generator.adapter';
 import { UserAlreadyExistsError } from './domain/errors/user-already-exists.error';
 import { RegisterUserRequest } from './domain/value-objects/register-user-request.vo';
-import { InvalidEmailError } from './domain/errors/invalid-email.error';
-import { InvalidPasswordError } from './domain/errors/invalid-password.error';
+import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
+import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
 import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
 
 const buildUseCase = (): RegisterUserUseCase => {
@@ -26,6 +26,7 @@ const buildUseCase = (): RegisterUserUseCase => {
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   try {
+    console.error('Event', event)
     const rawPayload =
       typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
     const payload =
@@ -105,5 +106,11 @@ if (require.main === module) {
     })
   } as Parameters<APIGatewayProxyHandler>[0];
 
-  handler(mockEvent, {} as any, () => {});
+  (async () => {
+    const response = await handler(mockEvent, {} as any, () => {});
+    console.log('Local invocation response:', response);
+  })().catch((error) => {
+    console.error('Local invocation failed:', error);
+    process.exitCode = 1;
+  });
 }

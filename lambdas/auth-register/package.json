@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run build:tests && node --test $(find dist-tests -name '*.test.js')",
-    "build:tests": "tsc --project tsconfig.tests.json",
+    "build:tests": "tsc --project tsconfig.tests.json && node ../shared/scripts/link-shared-tests.cjs dist-tests",
     "build": "esbuild src/handler.ts --bundle --platform=node --target=node20 --external:aws-sdk --sourcemap --outfile=dist/index.js",
     "zip": "zip -j function.zip dist/index.js",
     "start": "npm run build && node --enable-source-maps dist/index.js",
