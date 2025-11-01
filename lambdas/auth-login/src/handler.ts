@@ -8,7 +8,11 @@ import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
 import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
 import { InvalidCredentialsError } from './domain/errors/invalid-credentials.error';
 
-const buildUseCase = (): LoginUserUseCase => {
+type LoginUserUseCasePort = Pick<LoginUserUseCase, 'execute'>;
+
+type UseCaseFactory = () => LoginUserUseCasePort;
+
+const buildUseCase: UseCaseFactory = () => {
   const tableName = process.env.USERS_TABLE_NAME;
 
   if (!tableName) {
@@ -22,66 +26,69 @@ const buildUseCase = (): LoginUserUseCase => {
   return new LoginUserUseCase(userRepository, passwordHasher);
 };
 
-export const handler: APIGatewayProxyHandler = async (event) => {
-  try {
-    const rawPayload =
-      typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
-    const payload =
-      rawPayload && typeof rawPayload === 'object' ? rawPayload : {};
+export const createHandler = (useCaseFactory: UseCaseFactory): APIGatewayProxyHandler => {
+  return async (event) => {
+    try {
+      const rawPayload =
+        typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+      const payload =
+        rawPayload && typeof rawPayload === 'object' ? rawPayload : {};
 
-    const request = LoginUserRequest.create({
-      email: (payload as any).email,
-      password: (payload as any).password
-    });
+      const request = LoginUserRequest.create({
+        email: (payload as Record<string, unknown>).email,
+        password: (payload as Record<string, unknown>).password
+      });
 
-    const useCase = buildUseCase();
-    const result = await useCase.execute(request);
+      const result = await useCaseFactory().execute(request);
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: result.id,
-        email: result.email
-      })
-    };
-  } catch (error) {
-    console.error('Error logging in user', error);
-
-    if (
-      error instanceof InvalidEmailError ||
-      error instanceof InvalidPasswordError
-    ) {
       return {
-        statusCode: 400,
+        statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: error.message })
+        body: JSON.stringify({
+          id: result.id,
+          email: result.email
+        })
+      };
+    } catch (error) {
+      console.error('Error logging in user', error);
+
+      if (
+        error instanceof InvalidEmailError ||
+        error instanceof InvalidPasswordError
+      ) {
+        return {
+          statusCode: 400,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: error.message })
+        };
+      }
+
+      if (error instanceof InvalidCredentialsError) {
+        return {
+          statusCode: 401,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: error.message })
+        };
+      }
+
+      if (error instanceof SyntaxError) {
+        return {
+          statusCode: 400,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'Invalid JSON payload' })
+        };
+      }
+
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Internal Server Error' })
       };
     }
-
-    if (error instanceof InvalidCredentialsError) {
-      return {
-        statusCode: 401,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: error.message })
-      };
-    }
-
-    if (error instanceof SyntaxError) {
-      return {
-        statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Invalid JSON payload' })
-      };
-    }
-
-    return {
-      statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'Internal Server Error' })
-    };
-  }
+  };
 };
+
+export const handler: APIGatewayProxyHandler = createHandler(buildUseCase);
 
 if (require.main === module) {
   process.env.USERS_TABLE_NAME =
