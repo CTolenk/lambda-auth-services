@@ -15,6 +15,24 @@ if (!fs.existsSync(sharedDir)) {
 const nodeModulesDir = path.join(distDir, 'node_modules');
 const sharedTarget = path.join(nodeModulesDir, '@shared');
 
+const shouldCopy = (source) => {
+  const relative = path.relative(sharedDir, source);
+
+  if (!relative || relative.startsWith('..')) {
+    return true;
+  }
+
+  if (relative.split(path.sep).includes('__tests__')) {
+    return false;
+  }
+
+  if (relative.endsWith('.test.js') || relative.endsWith('.test.d.ts')) {
+    return false;
+  }
+
+  return true;
+};
+
 fs.mkdirSync(nodeModulesDir, { recursive: true });
 fs.rmSync(sharedTarget, { recursive: true, force: true });
-fs.cpSync(sharedDir, sharedTarget, { recursive: true });
+fs.cpSync(sharedDir, sharedTarget, { recursive: true, filter: shouldCopy });

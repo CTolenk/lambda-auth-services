@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DynamoDbUserRepository } from '@shared/infrastructure/dynamodb/dynamodb-user.repository';
-import { User } from '@shared/domain/entities/user.entity';
+import { DynamoDbUserRepository } from '../dynamodb-user.repository';
+import { User } from '../../../domain/entities/user.entity';
 
 type PutParams = {
   TableName: string;
@@ -34,9 +34,12 @@ class DocumentClientSpy {
   }
 }
 
-test('DynamoDbUserRepository saves a user using put', async () => {
+test('saves a user using put with conditional expression', async () => {
   const documentClient = new DocumentClientSpy();
-  const repository = new DynamoDbUserRepository(documentClient as any, 'UsersTable');
+  const repository = new DynamoDbUserRepository(
+    documentClient as any,
+    'UsersTable'
+  );
 
   const user: User = {
     id: 'user-id',
@@ -60,7 +63,7 @@ test('DynamoDbUserRepository saves a user using put', async () => {
   });
 });
 
-test('DynamoDbUserRepository retrieves a user by email', async () => {
+test('retrieves a user by email', async () => {
   const documentClient = new DocumentClientSpy();
   documentClient.getResponse = {
     Item: {
@@ -70,7 +73,11 @@ test('DynamoDbUserRepository retrieves a user by email', async () => {
       createdAt: '2024-01-01T00:00:00.000Z'
     }
   };
-  const repository = new DynamoDbUserRepository(documentClient as any, 'UsersTable');
+
+  const repository = new DynamoDbUserRepository(
+    documentClient as any,
+    'UsersTable'
+  );
 
   const result = await repository.findByEmail('user@example.com');
 
@@ -88,10 +95,14 @@ test('DynamoDbUserRepository retrieves a user by email', async () => {
   });
 });
 
-test('DynamoDbUserRepository returns null when no user found', async () => {
+test('returns null when no user found', async () => {
   const documentClient = new DocumentClientSpy();
   documentClient.getResponse = {};
-  const repository = new DynamoDbUserRepository(documentClient as any, 'UsersTable');
+
+  const repository = new DynamoDbUserRepository(
+    documentClient as any,
+    'UsersTable'
+  );
 
   const result = await repository.findByEmail('missing@example.com');
 
