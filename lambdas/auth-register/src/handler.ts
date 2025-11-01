@@ -4,12 +4,10 @@ import { DynamoDbUserRepository } from './infrastructure/adapters/dynamodb/dynam
 import { CryptoPasswordHasher } from './infrastructure/adapters/crypto/password-hasher.adapter';
 import { CryptoUuidGenerator } from './infrastructure/adapters/uuid/uuid-generator.adapter';
 import { UserAlreadyExistsError } from './domain/errors/user-already-exists.error';
-import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
 import { RegisterUserRequest } from './domain/value-objects/register-user-request.vo';
 import { InvalidEmailError } from './domain/errors/invalid-email.error';
 import { InvalidPasswordError } from './domain/errors/invalid-password.error';
-
-const documentClient = DynamoDbClientProvider.getClient();
+import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
 
 const buildUseCase = (): RegisterUserUseCase => {
   const tableName = process.env.USERS_TABLE_NAME;
@@ -18,14 +16,13 @@ const buildUseCase = (): RegisterUserUseCase => {
     throw new Error('Environment variable USERS_TABLE_NAME is not defined');
   }
 
+  const documentClient = DynamoDbClientProvider.getClient();
   const userRepository = new DynamoDbUserRepository(documentClient, tableName);
   const passwordHasher = new CryptoPasswordHasher();
   const uuidGenerator = new CryptoUuidGenerator();
 
   return new RegisterUserUseCase(userRepository, passwordHasher, uuidGenerator);
 };
-
-// Ing Muñoz
 
 export const handler: APIGatewayProxyHandler = async (event) => {
   try {
@@ -89,6 +86,16 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 };
 
 if (require.main === module) {
+  process.env.USERS_TABLE_NAME =
+    process.env.USERS_TABLE_NAME ?? 'auth-users-local';
+  process.env.AWS_REGION = process.env.AWS_REGION ?? 'us-east-1';
+  process.env.DYNAMODB_ENDPOINT =
+    process.env.DYNAMODB_ENDPOINT ?? 'http://localhost:8000';
+  process.env.AWS_ACCESS_KEY_ID =
+    process.env.AWS_ACCESS_KEY_ID ?? 'LOCALACCESSKEY000001';
+  process.env.AWS_SECRET_ACCESS_KEY =
+    process.env.AWS_SECRET_ACCESS_KEY ?? 'LOCALSECRETKEY000000000000000001';
+
   const mockEvent = {
     httpMethod: 'POST',
     path: '/auth/register',

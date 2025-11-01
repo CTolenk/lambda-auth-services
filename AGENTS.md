@@ -12,6 +12,7 @@ Run commands from the target Lambda folder.
 - `npm run build` bundles `src/handler.ts` into `dist/index.js`.
 - `npm run build:tests` compiles specs into `dist-tests/`.
 - `npm test` executes the compiled specs with Node’s test runner.
+- `npm start` rebuilds and runs the handler locally, defaulting `USERS_TABLE_NAME=auth-users-local` and `AWS_REGION=us-east-1` if they are not set (ensure AWS credentials or a DynamoDB local endpoint when exercising it).
 - `npm run zip` creates `function.zip` for `${name}/${env}/function.zip`.
 Infrastructure steps:
 - `terraform init` prepares providers.
