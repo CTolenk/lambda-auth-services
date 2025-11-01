@@ -1,9 +1,11 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { AwsDocumentClientFactory } from '../aws-document-client.factory';
+import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
 
 beforeEach(() => {
   AwsDocumentClientFactory.reset();
+  AwsDocumentClientFactory.restoreDefaultBuilder();
 });
 
 test('getInstance returns a singleton instance', () => {
@@ -32,14 +34,26 @@ test('getClient returns the same DocumentClient instance', () => {
   assert.strictEqual(clientA, clientB);
 });
 
-test('passes configuration options to the underlying DocumentClient', () => {
+test('passes configuration options to the builder', () => {
+  const calls: Array<DynamoDBClientConfig | undefined> = [];
+  const fakeClient = {} as any;
+
+  AwsDocumentClientFactory.useClientBuilder((options) => {
+    calls.push(options);
+    return fakeClient;
+  });
+
   const factory = AwsDocumentClientFactory.getInstance({
     region: 'eu-central-1',
     endpoint: 'http://localhost:9200'
   });
 
-  const client = factory.getClient() as any;
+  const client = factory.getClient();
 
-  assert.equal(client.service.config.region, 'eu-central-1');
-  assert.equal(client.service.endpoint.href, 'http://localhost:9200/');
+  assert.strictEqual(client, fakeClient);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0], {
+    region: 'eu-central-1',
+    endpoint: 'http://localhost:9200'
+  });
 });

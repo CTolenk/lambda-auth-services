@@ -3,8 +3,9 @@ import {
   DocumentClientLike
 } from '../../domain/ports/document-client-factory.port';
 import { AwsDocumentClientFactory } from '../../infrastructure/aws/aws-document-client.factory';
+import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
 
-type DynamoDbClientOptions = Record<string, unknown>;
+type DynamoDbClientOptions = DynamoDBClientConfig;
 
 export class DynamoDbClientProvider {
   private static factory: DocumentClientFactoryPort | null = null;
@@ -30,7 +31,7 @@ export class DynamoDbClientProvider {
 
     if (endpoint) {
       options.endpoint = endpoint;
-      options.sslEnabled = endpoint.startsWith('https://');
+      options.tls = endpoint.startsWith('https://');
     }
 
     return Object.keys(options).length > 0 ? options : undefined;
