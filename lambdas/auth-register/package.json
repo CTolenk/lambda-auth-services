@@ -5,8 +5,8 @@
   "scripts": {
     "test": "npm run build:tests && node --test $(find dist-tests -name '*.test.js')",
     "build:tests": "tsc --project tsconfig.tests.json && node ../shared/scripts/link-shared-tests.cjs dist-tests",
-    "build": "esbuild src/handler.ts --bundle --platform=node --target=node20 --external:aws-sdk --sourcemap --outfile=dist/index.js",
-    "zip": "rm -f function.zip && cp dist/index.js index.js && zip -r function.zip index.js node_modules/aws-sdk && rm index.js",
+    "build": "esbuild src/handler.ts --bundle --platform=node --target=node20 --sourcemap --outfile=dist/index.js",
+    "zip": "rm -f function.zip && zip -j function.zip dist/index.js",
     "start": "npm run build && node --enable-source-maps dist/index.js",
     "start:debug": "npm run build && node --inspect-brk=9229 --enable-source-maps dist/index.js"
   },
@@ -15,7 +15,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "aws-sdk": "^2.1692.0"
+    "@aws-sdk/client-dynamodb": "^3.678.0",
+    "@aws-sdk/lib-dynamodb": "^3.678.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",
