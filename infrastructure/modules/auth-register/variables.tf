@@ -30,3 +30,8 @@ variable "environment_variables" {
   description = "Environment variables to inject into the Lambda function"
   default     = {}
 }
+
+variable "dynamodb_table_arn" {
+  type        = string
+  description = "ARN of the DynamoDB table used by the function"
+}
