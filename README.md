@@ -11,6 +11,7 @@ Lambda-oriented authentication service following a hexagonal architecture. Each 
   - `AWS_REGION=us-east-1` (unless already defined)
   - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` dummy values for local use
   - `DYNAMODB_ENDPOINT=http://localhost:8000` (unless already defined)
+- Debug with WebStorm: run the `start:debug` npm script (see below) so breakpoints on `.ts` files map correctly via the emitted source map.
 
 ## DynamoDB Local
 
@@ -48,3 +49,8 @@ You can verify it with:
 ```
 aws dynamodb list-tables --endpoint-url http://localhost:8000 --region us-east-1
 ```
+
+## Debugging
+- Use the `npm run start:debug` script to launch the handler with Node’s inspector (`--inspect-brk`) and source-map support. WebStorm can attach automatically when you run that npm script in Debug mode.
+- Breakpoints set in `src/**/*.ts` resolve correctly because the esbuild bundle now ships source maps.
+- You can also create a WebStorm “Node.js” run configuration targeting `dist/index.js`, passing `--enable-source-maps` and (optionally) `--inspect-brk=9229`, if you prefer not to go through npm scripts.
