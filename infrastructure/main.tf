@@ -26,6 +26,9 @@ module "auth_login" {
   api_gateway_id    = aws_apigatewayv2_api.http_api.id
   api_execution_arn = aws_apigatewayv2_api.http_api.execution_arn
   dynamodb_table_arn = data.aws_dynamodb_table.auth_users.arn
+  environment_variables = {
+    USERS_TABLE_NAME = data.aws_dynamodb_table.auth_users.name
+  }
 }
 
 module "auth_register" {

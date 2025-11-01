@@ -29,3 +29,9 @@ variable "dynamodb_table_arn" {
   type        = string
   description = "ARN of the DynamoDB table the function reads from"
 }
+
+variable "environment_variables" {
+  type        = map(string)
+  description = "Environment variables to inject into the Lambda function"
+  default     = {}
+}

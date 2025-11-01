@@ -55,6 +55,13 @@ resource "aws_lambda_function" "this" {
   s3_key           = "${var.name}/${var.env}/function.zip"
   source_code_hash = var.source_code_hash
   publish          = true
+
+  dynamic "environment" {
+    for_each = length(var.environment_variables) > 0 ? [1] : []
+    content {
+      variables = var.environment_variables
+    }
+  }
 }
 
 resource "aws_apigatewayv2_integration" "this" {
