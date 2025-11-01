@@ -13,15 +13,8 @@ resource "aws_apigatewayv2_stage" "default" {
   auto_deploy = true
 }
 
-resource "aws_dynamodb_table" "auth_users" {
-  name         = "auth-users-${var.env}"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "email"
-
-  attribute {
-    name = "email"
-    type = "S"
-  }
+data "aws_dynamodb_table" "auth_users" {
+  name = "auth-users-${var.env}"
 }
 
 module "auth_login" {
@@ -43,6 +36,6 @@ module "auth_register" {
   api_gateway_id    = aws_apigatewayv2_api.http_api.id
   api_execution_arn = aws_apigatewayv2_api.http_api.execution_arn
   environment_variables = {
-    USERS_TABLE_NAME = aws_dynamodb_table.auth_users.name
+    USERS_TABLE_NAME = data.aws_dynamodb_table.auth_users.name
   }
 }
