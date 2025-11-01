@@ -6,9 +6,15 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": "../../dist"
+    "outDir": "../../dist",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    }
   },
   "include": [
-    "src"
+    "src",
+    "../shared/**/*.ts",
+    "../shared/**/*.d.ts"
   ]
 }
