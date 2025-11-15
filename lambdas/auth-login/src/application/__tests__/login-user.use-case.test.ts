@@ -1,11 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LoginUserUseCase } from '../use-cases/login-user.use-case';
-import { UserRepository } from '@shared/domain/ports/user-repository.port';
-import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
+
 import { User } from '@shared/domain/entities/user.entity';
+import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
+import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { LoginUserRequest } from '../../domain/value-objects/login-user-request.vo';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error';
+
+import { LoginUserUseCase } from '../use-cases/login-user.use-case';
 
 class UserRepositorySpy implements UserRepository {
   public findByEmailCalls: string[] = [];

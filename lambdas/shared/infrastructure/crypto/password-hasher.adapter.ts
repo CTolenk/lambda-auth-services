@@ -4,6 +4,7 @@ import {
   scrypt as scryptCallback,
   timingSafeEqual
 } from 'node:crypto';
+
 import { PasswordHasher } from '../../domain/ports/password-hasher.port';
 
 const scrypt = promisify(scryptCallback);

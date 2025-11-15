@@ -1,7 +1,8 @@
-import { test, beforeEach } from 'node:test';
+import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { AwsDocumentClientFactory } from '../aws-document-client.factory';
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
+
+import { AwsDocumentClientFactory } from '../aws-document-client.factory';
 
 beforeEach(() => {
   AwsDocumentClientFactory.reset();

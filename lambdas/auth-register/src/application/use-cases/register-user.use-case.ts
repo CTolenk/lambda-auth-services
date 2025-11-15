@@ -1,10 +1,11 @@
-import { UseCase } from '@shared/application/ports/use-case.port';
-import { UserRepository } from '@shared/domain/ports/user-repository.port';
-import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
-import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
-import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
 import { User } from '@shared/domain/entities/user.entity';
+import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
+import { UserRepository } from '@shared/domain/ports/user-repository.port';
+import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
 import { RegisterUserRequest } from '../../domain/value-objects/register-user-request.vo';
+import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
+
+import { UseCase } from '@shared/application/ports/use-case.port';
 
 interface RegisterUserResult {
   id: string;

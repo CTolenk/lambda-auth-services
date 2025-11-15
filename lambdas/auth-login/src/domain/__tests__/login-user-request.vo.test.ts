@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LoginUserRequest } from '../value-objects/login-user-request.vo';
+
 import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
 import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
+import { LoginUserRequest } from '../value-objects/login-user-request.vo';
 
 test('normalizes email and keeps password intact', () => {
   const request = LoginUserRequest.create({

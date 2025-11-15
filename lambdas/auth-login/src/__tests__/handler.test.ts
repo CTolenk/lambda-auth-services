@@ -1,10 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { createHandler } from '../handler';
+
 import { InvalidCredentialsError } from '../domain/errors/invalid-credentials.error';
 import { LoginUserRequest } from '../domain/value-objects/login-user-request.vo';
+
 import { LoginUserResult } from '../application/use-cases/login-user.use-case';
+
+import { createHandler } from '../handler';
 
 interface LoginUserUseCasePort {
   execute(request: LoginUserRequest): Promise<LoginUserResult>;

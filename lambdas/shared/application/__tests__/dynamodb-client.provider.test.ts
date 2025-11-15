@@ -1,12 +1,15 @@
-import { test, afterEach } from 'node:test';
+import { afterEach, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DynamoDbClientProvider } from '../services/dynamodb-client.provider';
-import { AwsDocumentClientFactory } from '../../infrastructure/aws/aws-document-client.factory';
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
+
 import {
   DocumentClientFactoryPort,
   DocumentClientLike
 } from '../../domain/ports/document-client-factory.port';
+
+import { DynamoDbClientProvider } from '../services/dynamodb-client.provider';
+
+import { AwsDocumentClientFactory } from '../../infrastructure/aws/aws-document-client.factory';
 
 const resetProvider = () => {
   (DynamoDbClientProvider as unknown as { factory: null }).factory = null;

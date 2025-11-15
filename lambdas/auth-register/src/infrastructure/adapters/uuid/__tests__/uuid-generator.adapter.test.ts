@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+
 import { CryptoUuidGenerator } from '../uuid-generator.adapter';
 
 const UUID_V4_REGEX =

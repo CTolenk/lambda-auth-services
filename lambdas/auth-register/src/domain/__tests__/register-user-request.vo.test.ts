@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RegisterUserRequest } from '../value-objects/register-user-request.vo';
+
 import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
 import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
+import { RegisterUserRequest } from '../value-objects/register-user-request.vo';
 
 test('creates a request with normalized email', () => {
   const request = RegisterUserRequest.create({

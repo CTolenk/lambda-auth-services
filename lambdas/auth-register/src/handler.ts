@@ -1,13 +1,16 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
+
+import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
+import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
+import { UserAlreadyExistsError } from './domain/errors/user-already-exists.error';
+import { RegisterUserRequest } from './domain/value-objects/register-user-request.vo';
+
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
+import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
+
 import { DynamoDbUserRepository } from '@shared/infrastructure/dynamodb/dynamodb-user.repository';
 import { CryptoPasswordHasher } from '@shared/infrastructure/crypto/password-hasher.adapter';
 import { CryptoUuidGenerator } from './infrastructure/adapters/uuid/uuid-generator.adapter';
-import { UserAlreadyExistsError } from './domain/errors/user-already-exists.error';
-import { RegisterUserRequest } from './domain/value-objects/register-user-request.vo';
-import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
-import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
-import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
 
 const buildUseCase = (): RegisterUserUseCase => {
   const tableName = process.env.USERS_TABLE_NAME;
