@@ -1,5 +1,4 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, test } from 'vitest';
 
 import { User } from '@shared/domain/entities/user.entity';
 import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
@@ -60,11 +59,11 @@ test('returns user data when credentials are valid', async () => {
 
   const result = await useCase.execute(request);
 
-  assert.deepEqual(repository.findByEmailCalls, ['user@example.com']);
-  assert.deepEqual(passwordHasher.verifyCalls, [
+  expect(repository.findByEmailCalls).toEqual(['user@example.com']);
+  expect(passwordHasher.verifyCalls).toEqual([
     { plainText: 'Secret123', hashed: 'stored-hash' }
   ]);
-  assert.deepEqual(result, { id: 'user-id', email: 'user@example.com' });
+  expect(result).toEqual({ id: 'user-id', email: 'user@example.com' });
 });
 
 test('throws InvalidCredentialsError when user is not found', async () => {
@@ -75,16 +74,14 @@ test('throws InvalidCredentialsError when user is not found', async () => {
 
   const useCase = new LoginUserUseCase(repository, passwordHasher);
 
-  await assert.rejects(
-    () =>
-      useCase.execute(
-        LoginUserRequest.create({
-          email: 'unknown@example.com',
-          password: 'Secret123'
-        })
-      ),
-    (error: unknown) => error instanceof InvalidCredentialsError
-  );
+  await expect(
+    useCase.execute(
+      LoginUserRequest.create({
+        email: 'unknown@example.com',
+        password: 'Secret123'
+      })
+    )
+  ).rejects.toBeInstanceOf(InvalidCredentialsError);
 });
 
 test('throws InvalidCredentialsError when password does not match', async () => {
@@ -101,14 +98,12 @@ test('throws InvalidCredentialsError when password does not match', async () => 
 
   const useCase = new LoginUserUseCase(repository, passwordHasher);
 
-  await assert.rejects(
-    () =>
-      useCase.execute(
-        LoginUserRequest.create({
-          email: 'user@example.com',
-          password: 'WrongPass123'
-        })
-      ),
-    (error: unknown) => error instanceof InvalidCredentialsError
-  );
+  await expect(
+    useCase.execute(
+      LoginUserRequest.create({
+        email: 'user@example.com',
+        password: 'WrongPass123'
+      })
+    )
+  ).rejects.toBeInstanceOf(InvalidCredentialsError);
 });

@@ -1,5 +1,4 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, test } from 'vitest';
 
 import { User } from '@shared/domain/entities/user.entity';
 import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
@@ -68,17 +67,17 @@ test('registers a new user and returns the user data', async () => {
 
   const result = await useCase.execute(request);
 
-  assert.deepEqual(userRepository.findByEmailCalls, ['user@example.com']);
-  assert.deepEqual(passwordHasher.hashCalls, ['Secret123']);
-  assert.equal(userRepository.savedUsers.length, 1);
+  expect(userRepository.findByEmailCalls).toEqual(['user@example.com']);
+  expect(passwordHasher.hashCalls).toEqual(['Secret123']);
+  expect(userRepository.savedUsers).toHaveLength(1);
 
   const savedUser = userRepository.savedUsers[0];
-  assert.equal(savedUser.id, 'generated-uuid');
-  assert.equal(savedUser.email, 'user@example.com');
-  assert.equal(savedUser.passwordHash, 'hashed-password');
-  assert.ok(savedUser.createdAt instanceof Date);
+  expect(savedUser.id).toBe('generated-uuid');
+  expect(savedUser.email).toBe('user@example.com');
+  expect(savedUser.passwordHash).toBe('hashed-password');
+  expect(savedUser.createdAt).toBeInstanceOf(Date);
 
-  assert.deepEqual(result, {
+  expect(result).toEqual({
     id: 'generated-uuid',
     email: 'user@example.com'
   });
@@ -102,16 +101,14 @@ test('throws when a user already exists with the same email', async () => {
     uuidGenerator
   );
 
-  await assert.rejects(
-    () =>
-      useCase.execute(
-        RegisterUserRequest.create({
+  await expect(
+    useCase.execute(
+      RegisterUserRequest.create({
         email: 'user@example.com',
         password: 'Secret123'
       })
-      ),
-    (error: unknown) => error instanceof UserAlreadyExistsError
-  );
+    )
+  ).rejects.toBeInstanceOf(UserAlreadyExistsError);
 
-  assert.equal(userRepository.savedUsers.length, 0);
+  expect(userRepository.savedUsers).toHaveLength(0);
 });

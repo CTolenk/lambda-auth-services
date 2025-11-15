@@ -1,5 +1,4 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, test } from 'vitest';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 import { InvalidCredentialsError } from '../domain/errors/invalid-credentials.error';
@@ -52,9 +51,8 @@ test('returns 400 when payload validation fails', async () => {
 
   const response = await handler(buildEvent('{}'), context, () => {});
 
-  assert.ok(response);
-  assert.equal(response.statusCode, 400);
-  assert.equal(useCase.calls.length, 0);
+  expect(response.statusCode).toBe(400);
+  expect(useCase.calls).toHaveLength(0);
 });
 
 test('returns 400 when body is invalid JSON', async () => {
@@ -63,9 +61,8 @@ test('returns 400 when body is invalid JSON', async () => {
 
   const response = await handler(buildEvent('not-json'), context, () => {});
 
-  assert.ok(response);
-  assert.equal(response.statusCode, 400);
-  assert.equal(useCase.calls.length, 0);
+  expect(response.statusCode).toBe(400);
+  expect(useCase.calls).toHaveLength(0);
 });
 
 test('returns 401 when use case throws InvalidCredentialsError', async () => {
@@ -79,10 +76,9 @@ test('returns 401 when use case throws InvalidCredentialsError', async () => {
     context,
     () => {}
   );
-  assert.ok(response);
-  assert.equal(response.statusCode, 401);
-  assert.equal(JSON.parse(response.body).message, useCase.error?.message);
-  assert.equal(useCase.calls.length, 1);
+  expect(response.statusCode).toBe(401);
+  expect(JSON.parse(response.body).message).toBe(useCase.error?.message);
+  expect(useCase.calls).toHaveLength(1);
 });
 
 test('returns 200 and body when credentials are valid', async () => {
@@ -96,13 +92,12 @@ test('returns 200 and body when credentials are valid', async () => {
     context,
     () => {}
   );
-  assert.ok(response);
-  assert.equal(response.statusCode, 200);
-  assert.deepEqual(JSON.parse(response.body), {
+  expect(response.statusCode).toBe(200);
+  expect(JSON.parse(response.body)).toEqual({
     id: 'generated-id',
     email: 'user@example.com'
   });
-  assert.equal(useCase.calls.length, 1);
-  assert.equal(useCase.calls[0].email, 'user@example.com');
-  assert.equal(useCase.calls[0].password, 'Secret123');
+  expect(useCase.calls).toHaveLength(1);
+  expect(useCase.calls[0].email).toBe('user@example.com');
+  expect(useCase.calls[0].password).toBe('Secret123');
 });

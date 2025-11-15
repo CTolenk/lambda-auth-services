@@ -1,5 +1,4 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, test } from 'vitest';
 
 import { User } from '../../../domain/entities/user.entity';
 
@@ -52,8 +51,8 @@ test('saves a user using put with conditional expression', async () => {
 
   await repository.save(user);
 
-  assert.equal(documentClient.putCalls.length, 1);
-  assert.deepEqual(documentClient.putCalls[0], {
+  expect(documentClient.putCalls).toHaveLength(1);
+  expect(documentClient.putCalls[0]).toEqual({
     TableName: 'UsersTable',
     Item: {
       id: 'user-id',
@@ -83,14 +82,14 @@ test('retrieves a user by email', async () => {
 
   const result = await repository.findByEmail('user@example.com');
 
-  assert.equal(documentClient.getCalls.length, 1);
-  assert.deepEqual(documentClient.getCalls[0], {
+  expect(documentClient.getCalls).toHaveLength(1);
+  expect(documentClient.getCalls[0]).toEqual({
     TableName: 'UsersTable',
     Key: { email: 'user@example.com' }
   });
 
-  assert.ok(result);
-  assert.deepEqual(result?.toPrimitives(), {
+  expect(result).not.toBeNull();
+  expect(result?.toPrimitives()).toEqual({
     id: 'user-id',
     email: 'user@example.com',
     passwordHash: 'hashed-value',
@@ -109,5 +108,5 @@ test('returns null when no user found', async () => {
 
   const result = await repository.findByEmail('missing@example.com');
 
-  assert.equal(result, null);
+  expect(result).toBeNull();
 });

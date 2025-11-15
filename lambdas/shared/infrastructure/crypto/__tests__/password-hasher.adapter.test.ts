@@ -1,5 +1,4 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, test } from 'vitest';
 
 import { CryptoPasswordHasher } from '../password-hasher.adapter';
 
@@ -10,9 +9,9 @@ test('hash produces salt and hash separated by colon', async () => {
 
   const [salt, derived] = hashed.split(':');
 
-  assert.ok(salt, 'salt should be present');
-  assert.ok(derived, 'derived key should be present');
-  assert.equal(Buffer.from(salt, 'hex').length, 16);
+  expect(salt, 'salt should be present').toBeTruthy();
+  expect(derived, 'derived key should be present').toBeTruthy();
+  expect(Buffer.from(salt, 'hex')).toHaveLength(16);
 });
 
 test('verify returns true for correct password', async () => {
@@ -22,7 +21,7 @@ test('verify returns true for correct password', async () => {
 
   const isValid = await hasher.verify('Password!1', hashed);
 
-  assert.equal(isValid, true);
+  expect(isValid).toBe(true);
 });
 
 test('verify returns false for incorrect password', async () => {
@@ -32,7 +31,7 @@ test('verify returns false for incorrect password', async () => {
 
   const isValid = await hasher.verify('WrongPassword', hashed);
 
-  assert.equal(isValid, false);
+  expect(isValid).toBe(false);
 });
 
 test('verify returns false when hashed value is malformed', async () => {
@@ -40,5 +39,5 @@ test('verify returns false when hashed value is malformed', async () => {
 
   const isValid = await hasher.verify('Password!1', 'invalid-hash');
 
-  assert.equal(isValid, false);
+  expect(isValid).toBe(false);
 });
