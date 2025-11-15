@@ -96,31 +96,31 @@ export const createHandler = (useCaseFactory: UseCaseFactory): APIGatewayProxyHa
 
 export const handler: APIGatewayProxyHandler = createHandler(buildUseCase);
 
-if (require.main === module) {
-  process.env.USERS_TABLE_NAME =
-    process.env.USERS_TABLE_NAME ?? 'auth-users-local';
-  process.env.AWS_REGION = process.env.AWS_REGION ?? 'us-east-1';
-  process.env.DYNAMODB_ENDPOINT =
-    process.env.DYNAMODB_ENDPOINT ?? 'http://localhost:8000';
-  process.env.AWS_ACCESS_KEY_ID =
-    process.env.AWS_ACCESS_KEY_ID ?? 'LOCALACCESSKEY000001';
-  process.env.AWS_SECRET_ACCESS_KEY =
-    process.env.AWS_SECRET_ACCESS_KEY ?? 'LOCALSECRETKEY000000000000000001';
-
-  const mockEvent = {
-    httpMethod: 'POST',
-    path: '/auth/register',
-    body: JSON.stringify({
-      email: 'local@example.com',
-      password: 'Secret123'
-    })
-  } as Parameters<APIGatewayProxyHandler>[0];
-
-  (async () => {
-    const response = await handler(mockEvent, {} as any, () => {});
-    console.log('Local invocation response:', response);
-  })().catch((error) => {
-    console.error('Local invocation failed:', error);
-    process.exitCode = 1;
-  });
-}
+// if (require.main === module) {
+//   process.env.USERS_TABLE_NAME =
+//     process.env.USERS_TABLE_NAME ?? 'auth-users-local';
+//   process.env.AWS_REGION = process.env.AWS_REGION ?? 'us-east-1';
+//   process.env.DYNAMODB_ENDPOINT =
+//     process.env.DYNAMODB_ENDPOINT ?? 'http://localhost:8000';
+//   process.env.AWS_ACCESS_KEY_ID =
+//     process.env.AWS_ACCESS_KEY_ID ?? 'LOCALACCESSKEY000001';
+//   process.env.AWS_SECRET_ACCESS_KEY =
+//     process.env.AWS_SECRET_ACCESS_KEY ?? 'LOCALSECRETKEY000000000000000001';
+//
+//   const mockEvent = {
+//     httpMethod: 'POST',
+//     path: '/auth/register',
+//     body: JSON.stringify({
+//       email: 'local@example.com',
+//       password: 'Secret123'
+//     })
+//   } as Parameters<APIGatewayProxyHandler>[0];
+//
+//   (async () => {
+//     const response = await handler(mockEvent, {} as any, () => {});
+//     console.log('Local invocation response:', response);
+//   })().catch((error) => {
+//     console.error('Local invocation failed:', error);
+//     process.exitCode = 1;
+//   });
+// }

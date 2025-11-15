@@ -12,7 +12,15 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.ts', '../shared/**/*.ts'],
-      exclude: ['src/**/*.d.ts', '../shared/**/*.d.ts', 'dist/**', 'dist-tests/**']
+      exclude: [
+        'src/**/*.d.ts',
+        '../shared/**/*.d.ts',
+        'src/**/*.test.ts',
+        '../shared/**/*.test.ts',
+        'src/index.ts',
+        'dist/**',
+        'dist-tests/**'
+      ]
     }
   },
   resolve: {
