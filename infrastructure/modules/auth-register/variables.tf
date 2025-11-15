@@ -24,3 +24,14 @@ variable "api_execution_arn" {
   type        = string
   description = "Execution ARN of the shared API Gateway"
 }
+
+variable "environment_variables" {
+  type        = map(string)
+  description = "Environment variables to inject into the Lambda function"
+  default     = {}
+}
+
+variable "dynamodb_table_arn" {
+  type        = string
+  description = "ARN of the DynamoDB table used by the function"
+}

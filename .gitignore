@@ -2,3 +2,7 @@ node_modules/
 dist/
 function.zip
 .idea/
+dist-tests/
+.DS_Store
+coverage/
+**/coverage/
