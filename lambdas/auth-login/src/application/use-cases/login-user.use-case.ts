@@ -1,3 +1,4 @@
+import { UseCase } from '@shared/application/ports/use-case.port';
 import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
 import { LoginUserRequest } from '../../domain/value-objects/login-user-request.vo';
@@ -9,7 +10,9 @@ interface LoginUserResult {
   email: string;
 }
 
-export class LoginUserUseCase {
+export class LoginUserUseCase
+  implements UseCase<LoginUserRequest, LoginUserResult>
+{
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher

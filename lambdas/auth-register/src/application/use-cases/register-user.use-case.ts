@@ -1,3 +1,4 @@
+import { UseCase } from '@shared/application/ports/use-case.port';
 import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
 import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
@@ -10,7 +11,9 @@ interface RegisterUserResult {
   email: string;
 }
 
-export class RegisterUserUseCase {
+export class RegisterUserUseCase
+  implements UseCase<RegisterUserRequest, RegisterUserResult>
+{
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
