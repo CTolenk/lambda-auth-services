@@ -12,7 +12,11 @@ import { DynamoDbUserRepository } from '@shared/infrastructure/dynamodb/dynamodb
 import { CryptoPasswordHasher } from '@shared/infrastructure/crypto/password-hasher.adapter';
 import { CryptoUuidGenerator } from './infrastructure/adapters/uuid/uuid-generator.adapter';
 
-const buildUseCase = (): RegisterUserUseCase => {
+type RegisterUserUseCasePort = Pick<RegisterUserUseCase, 'execute'>;
+
+type UseCaseFactory = () => RegisterUserUseCasePort;
+
+const buildUseCase: UseCaseFactory = () => {
   const tableName = process.env.USERS_TABLE_NAME;
 
   if (!tableName) {
@@ -27,67 +31,70 @@ const buildUseCase = (): RegisterUserUseCase => {
   return new RegisterUserUseCase(userRepository, passwordHasher, uuidGenerator);
 };
 
-export const handler: APIGatewayProxyHandler = async (event) => {
-  try {
-    console.log('Event Incoming', event)
-    const rawPayload =
-      typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
-    const payload =
-      rawPayload && typeof rawPayload === 'object' ? rawPayload : {};
+export const createHandler = (useCaseFactory: UseCaseFactory): APIGatewayProxyHandler => {
+  return async (event) => {
+    try {
+      console.log('Event Incoming', event);
+      const rawPayload =
+        typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+      const payload =
+        rawPayload && typeof rawPayload === 'object' ? rawPayload : {};
 
-    const request = RegisterUserRequest.create({
-      email: (payload as any).email,
-      password: (payload as any).password
-    });
+      const request = RegisterUserRequest.create({
+        email: (payload as Record<string, unknown>).email,
+        password: (payload as Record<string, unknown>).password
+      });
 
-    const useCase = buildUseCase();
-    const result = await useCase.execute(request);
+      const result = await useCaseFactory().execute(request);
 
-    return {
-      statusCode: 201,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: result.id,
-        email: result.email
-      })
-    };
-  } catch (error) {
-    console.error('Error registering user', error);
-
-    if (
-      error instanceof InvalidEmailError ||
-      error instanceof InvalidPasswordError
-    ) {
       return {
-        statusCode: 400,
+        statusCode: 201,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: error.message })
+        body: JSON.stringify({
+          id: result.id,
+          email: result.email
+        })
+      };
+    } catch (error) {
+      console.error('Error registering user', error);
+
+      if (
+        error instanceof InvalidEmailError ||
+        error instanceof InvalidPasswordError
+      ) {
+        return {
+          statusCode: 400,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: error.message })
+        };
+      }
+
+      if (error instanceof UserAlreadyExistsError) {
+        return {
+          statusCode: 409,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: error.message })
+        };
+      }
+
+      if (error instanceof SyntaxError) {
+        return {
+          statusCode: 400,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'Invalid JSON payload' })
+        };
+      }
+
+      return {
+        statusCode: 500,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Internal Server Error' })
       };
     }
-
-    if (error instanceof UserAlreadyExistsError) {
-      return {
-        statusCode: 409,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: error.message })
-      };
-    }
-
-    if (error instanceof SyntaxError) {
-      return {
-        statusCode: 400,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Invalid JSON payload' })
-      };
-    }
-
-    return {
-      statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'Internal Server Error' })
-    };
-  }
+  };
 };
+
+export const handler: APIGatewayProxyHandler = createHandler(buildUseCase);
 
 if (require.main === module) {
   process.env.USERS_TABLE_NAME =

@@ -5,6 +5,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "build": "esbuild src/handler.ts --bundle --platform=node --target=node20 --sourcemap --outfile=dist/index.js",
     "zip": "rm -f function.zip && zip -j function.zip dist/index.js",
     "start": "npm run build && node --enable-source-maps dist/index.js",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",
+    "@vitest/coverage-v8": "^2.1.4",
     "@types/node": "^24.0.1",
     "esbuild": "^0.25.5",
     "typescript": "^5.8.3",

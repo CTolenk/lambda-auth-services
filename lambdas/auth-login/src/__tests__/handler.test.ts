@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
 
 import { InvalidCredentialsError } from '../domain/errors/invalid-credentials.error';
@@ -6,7 +6,9 @@ import { LoginUserRequest } from '../domain/value-objects/login-user-request.vo'
 
 import { LoginUserResult } from '../application/use-cases/login-user.use-case';
 
-import { createHandler } from '../handler';
+import { createHandler, handler } from '../handler';
+import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
+import { CryptoPasswordHasher } from '@shared/infrastructure/crypto/password-hasher.adapter';
 
 interface LoginUserUseCasePort {
   execute(request: LoginUserRequest): Promise<LoginUserResult>;
@@ -28,6 +30,26 @@ class LoginUserUseCaseSpy implements LoginUserUseCasePort {
   }
 }
 
+class DocumentClientStub {
+  public putCalls: any[] = [];
+  public getCalls: any[] = [];
+  public getResponse: Record<string, unknown> = {};
+
+  put(params: any) {
+    this.putCalls.push(params);
+    return {
+      promise: async () => undefined
+    };
+  }
+
+  get(params: any) {
+    this.getCalls.push(params);
+    return {
+      promise: async () => this.getResponse
+    };
+  }
+}
+
 const buildEvent = (body: unknown): APIGatewayProxyEvent => ({
   body: typeof body === 'string' ? body : JSON.stringify(body),
   headers: {},
@@ -44,6 +66,11 @@ const buildEvent = (body: unknown): APIGatewayProxyEvent => ({
 });
 
 const context = {} as Context;
+
+afterEach(() => {
+  delete process.env.USERS_TABLE_NAME;
+  vi.restoreAllMocks();
+});
 
 test('returns 400 when payload validation fails', async () => {
   const useCase = new LoginUserUseCaseSpy();
@@ -100,4 +127,61 @@ test('returns 200 and body when credentials are valid', async () => {
   expect(useCase.calls).toHaveLength(1);
   expect(useCase.calls[0].email).toBe('user@example.com');
   expect(useCase.calls[0].password).toBe('Secret123');
+});
+
+test('returns 500 when an unexpected error occurs', async () => {
+  const useCase = new LoginUserUseCaseSpy();
+  useCase.error = new Error('boom');
+
+  const handler = createHandler(() => useCase);
+
+  const response = await handler(
+    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' })),
+    context,
+    () => {}
+  );
+
+  expect(response.statusCode).toBe(500);
+  expect(JSON.parse(response.body).message).toBe('Internal Server Error');
+});
+
+test('uses buildUseCase when USERS_TABLE_NAME is set', async () => {
+  process.env.USERS_TABLE_NAME = 'users-table';
+
+  const documentClient = new DocumentClientStub();
+  documentClient.getResponse = {
+    Item: {
+      id: 'user-id',
+      email: 'user@example.com',
+      passwordHash: 'hashed-password',
+      createdAt: new Date().toISOString()
+    }
+  };
+
+  vi.spyOn(DynamoDbClientProvider, 'getClient').mockReturnValue(
+    documentClient as any
+  );
+  vi.spyOn(CryptoPasswordHasher.prototype, 'verify').mockResolvedValue(true);
+
+  const response = await handler(
+    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' })),
+    context,
+    () => {}
+  );
+
+  expect(response.statusCode).toBe(200);
+  expect(documentClient.getCalls).toHaveLength(1);
+});
+
+test('returns 500 when USERS_TABLE_NAME is missing', async () => {
+  delete process.env.USERS_TABLE_NAME;
+
+  const response = await handler(
+    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' })),
+    context,
+    () => {}
+  );
+
+  expect(response.statusCode).toBe(500);
+  expect(JSON.parse(response.body).message).toBe('Internal Server Error');
 });
