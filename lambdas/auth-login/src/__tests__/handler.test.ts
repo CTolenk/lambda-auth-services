@@ -1,5 +1,9 @@
 import { afterEach, expect, test, vi } from 'vitest';
-import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context
+} from 'aws-lambda';
 
 import { InvalidCredentialsError } from '../domain/errors/invalid-credentials.error';
 import { LoginUserRequest } from '../domain/value-objects/login-user-request.vo';
@@ -67,6 +71,19 @@ const buildEvent = (body: unknown): APIGatewayProxyEvent => ({
 
 const context = {} as Context;
 
+const invokeHandler = async (
+  handlerFn: ReturnType<typeof createHandler>,
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> => {
+  const response = await handlerFn(event, context, () => {});
+
+  if (!response) {
+    throw new Error('Handler returned void');
+  }
+
+  return response;
+};
+
 afterEach(() => {
   delete process.env.USERS_TABLE_NAME;
   vi.restoreAllMocks();
@@ -76,7 +93,7 @@ test('returns 400 when payload validation fails', async () => {
   const useCase = new LoginUserUseCaseSpy();
   const handler = createHandler(() => useCase);
 
-  const response = await handler(buildEvent('{}'), context, () => {});
+  const response = await invokeHandler(handler, buildEvent('{}'));
 
   expect(response.statusCode).toBe(400);
   expect(useCase.calls).toHaveLength(0);
@@ -86,7 +103,7 @@ test('returns 400 when body is invalid JSON', async () => {
   const useCase = new LoginUserUseCaseSpy();
   const handler = createHandler(() => useCase);
 
-  const response = await handler(buildEvent('not-json'), context, () => {});
+  const response = await invokeHandler(handler, buildEvent('not-json'));
 
   expect(response.statusCode).toBe(400);
   expect(useCase.calls).toHaveLength(0);
@@ -98,10 +115,9 @@ test('returns 401 when use case throws InvalidCredentialsError', async () => {
 
   const handler = createHandler(() => useCase);
 
-  const response = await handler(
-    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' })),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' }))
   );
   expect(response.statusCode).toBe(401);
   expect(JSON.parse(response.body).message).toBe(useCase.error?.message);
@@ -114,10 +130,9 @@ test('returns 200 and body when credentials are valid', async () => {
 
   const handler = createHandler(() => useCase);
 
-  const response = await handler(
-    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' })),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' }))
   );
   expect(response.statusCode).toBe(200);
   expect(JSON.parse(response.body)).toEqual({
@@ -135,10 +150,9 @@ test('returns 500 when an unexpected error occurs', async () => {
 
   const handler = createHandler(() => useCase);
 
-  const response = await handler(
-    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' })),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' }))
   );
 
   expect(response.statusCode).toBe(500);
@@ -163,10 +177,9 @@ test('uses buildUseCase when USERS_TABLE_NAME is set', async () => {
   );
   vi.spyOn(CryptoPasswordHasher.prototype, 'verify').mockResolvedValue(true);
 
-  const response = await handler(
-    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' })),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' }))
   );
 
   expect(response.statusCode).toBe(200);
@@ -176,10 +189,9 @@ test('uses buildUseCase when USERS_TABLE_NAME is set', async () => {
 test('returns 500 when USERS_TABLE_NAME is missing', async () => {
   delete process.env.USERS_TABLE_NAME;
 
-  const response = await handler(
-    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' })),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent(JSON.stringify({ email: 'user@example.com', password: 'Secret123' }))
   );
 
   expect(response.statusCode).toBe(500);

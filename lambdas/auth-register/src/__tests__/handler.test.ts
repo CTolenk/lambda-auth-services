@@ -1,5 +1,9 @@
 import { afterEach, expect, test, vi } from 'vitest';
-import { APIGatewayProxyEvent, Context } from 'aws-lambda';
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context
+} from 'aws-lambda';
 
 import { UserAlreadyExistsError } from '../domain/errors/user-already-exists.error';
 import { RegisterUserRequest } from '../domain/value-objects/register-user-request.vo';
@@ -68,6 +72,19 @@ const buildEvent = (body: unknown): APIGatewayProxyEvent => ({
 
 const context = {} as Context;
 
+const invokeHandler = async (
+  handlerFn: ReturnType<typeof createHandler>,
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> => {
+  const response = await handlerFn(event, context, () => {});
+
+  if (!response) {
+    throw new Error('Handler returned void');
+  }
+
+  return response;
+};
+
 afterEach(() => {
   delete process.env.USERS_TABLE_NAME;
   vi.restoreAllMocks();
@@ -79,10 +96,9 @@ test('returns 201 when registration succeeds', async () => {
 
   const handler = createHandler(() => useCase);
 
-  const response = await handler(
-    buildEvent({ email: 'User@example.com', password: 'Secret123' }),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent({ email: 'User@example.com', password: 'Secret123' })
   );
 
   expect(response.statusCode).toBe(201);
@@ -102,10 +118,9 @@ test('uses buildUseCase when USERS_TABLE_NAME is set', async () => {
     documentClient as any
   );
 
-  const response = await handler(
-    buildEvent({ email: 'user@example.com', password: 'Secret123' }),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent({ email: 'user@example.com', password: 'Secret123' })
   );
 
   expect(response.statusCode).toBe(201);
@@ -116,10 +131,9 @@ test('uses buildUseCase when USERS_TABLE_NAME is set', async () => {
 test('returns 500 when USERS_TABLE_NAME is missing', async () => {
   delete process.env.USERS_TABLE_NAME;
 
-  const response = await handler(
-    buildEvent({ email: 'user@example.com', password: 'Secret123' }),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent({ email: 'user@example.com', password: 'Secret123' })
   );
 
   expect(response.statusCode).toBe(500);
@@ -130,7 +144,7 @@ test('returns 400 when payload validation fails', async () => {
   const useCase = new RegisterUserUseCaseSpy();
   const handler = createHandler(() => useCase);
 
-  const response = await handler(buildEvent('{}'), context, () => {});
+  const response = await invokeHandler(handler, buildEvent('{}'));
 
   expect(response.statusCode).toBe(400);
   expect(useCase.calls).toHaveLength(0);
@@ -140,7 +154,7 @@ test('returns 400 when payload is invalid JSON', async () => {
   const useCase = new RegisterUserUseCaseSpy();
   const handler = createHandler(() => useCase);
 
-  const response = await handler(buildEvent('not-json'), context, () => {});
+  const response = await invokeHandler(handler, buildEvent('not-json'));
 
   expect(response.statusCode).toBe(400);
   expect(useCase.calls).toHaveLength(0);
@@ -152,10 +166,9 @@ test('returns 409 when user already exists', async () => {
 
   const handler = createHandler(() => useCase);
 
-  const response = await handler(
-    buildEvent({ email: 'user@example.com', password: 'Secret123' }),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent({ email: 'user@example.com', password: 'Secret123' })
   );
 
   expect(response.statusCode).toBe(409);
@@ -171,10 +184,9 @@ test('returns 500 when an unexpected error occurs', async () => {
 
   const handler = createHandler(() => useCase);
 
-  const response = await handler(
-    buildEvent({ email: 'user@example.com', password: 'Secret123' }),
-    context,
-    () => {}
+  const response = await invokeHandler(
+    handler,
+    buildEvent({ email: 'user@example.com', password: 'Secret123' })
   );
 
   expect(response.statusCode).toBe(500);
