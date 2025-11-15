@@ -29,6 +29,7 @@ const buildUseCase: UseCaseFactory = () => {
 export const createHandler = (useCaseFactory: UseCaseFactory): APIGatewayProxyHandler => {
   return async (event) => {
     try {
+      console.log('Event Incoming', event)
       const rawPayload =
         typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
       const payload =
