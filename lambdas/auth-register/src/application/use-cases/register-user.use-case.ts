@@ -27,12 +27,11 @@ export class RegisterUserUseCase {
 
     const passwordHash = await this.passwordHasher.hash(request.password);
 
-    const user: User = {
+    const user = User.create({
       id: this.uuidGenerator.generate(),
       email: normalizedEmail,
-      passwordHash,
-      createdAt: new Date()
-    };
+      passwordHash
+    });
 
     await this.userRepository.save(user);
 

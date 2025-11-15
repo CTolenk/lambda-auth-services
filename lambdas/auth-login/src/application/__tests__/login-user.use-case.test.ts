@@ -39,12 +39,12 @@ class PasswordHasherSpy implements PasswordHasher {
 
 test('returns user data when credentials are valid', async () => {
   const repository = new UserRepositorySpy();
-  repository.findByEmailReturn = {
+  repository.findByEmailReturn = User.create({
     id: 'user-id',
     email: 'user@example.com',
     passwordHash: 'stored-hash',
     createdAt: new Date()
-  };
+  });
 
   const passwordHasher = new PasswordHasherSpy();
   passwordHasher.verifyReturnValue = true;
@@ -87,12 +87,12 @@ test('throws InvalidCredentialsError when user is not found', async () => {
 
 test('throws InvalidCredentialsError when password does not match', async () => {
   const repository = new UserRepositorySpy();
-  repository.findByEmailReturn = {
+  repository.findByEmailReturn = User.create({
     id: 'user-id',
     email: 'user@example.com',
     passwordHash: 'stored-hash',
     createdAt: new Date()
-  };
+  });
 
   const passwordHasher = new PasswordHasherSpy();
   passwordHasher.verifyReturnValue = false;

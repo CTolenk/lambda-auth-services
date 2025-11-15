@@ -41,12 +41,12 @@ test('saves a user using put with conditional expression', async () => {
     'UsersTable'
   );
 
-  const user: User = {
+  const user = User.create({
     id: 'user-id',
     email: 'user@example.com',
-    passwordHash: 'hash',
+    passwordHash: 'hashed-value',
     createdAt: new Date('2024-01-01T00:00:00.000Z')
-  };
+  });
 
   await repository.save(user);
 
@@ -56,7 +56,7 @@ test('saves a user using put with conditional expression', async () => {
     Item: {
       id: 'user-id',
       email: 'user@example.com',
-      passwordHash: 'hash',
+      passwordHash: 'hashed-value',
       createdAt: '2024-01-01T00:00:00.000Z'
     },
     ConditionExpression: 'attribute_not_exists(email)'
@@ -69,7 +69,7 @@ test('retrieves a user by email', async () => {
     Item: {
       id: 'user-id',
       email: 'user@example.com',
-      passwordHash: 'hash',
+      passwordHash: 'hashed-value',
       createdAt: '2024-01-01T00:00:00.000Z'
     }
   };
@@ -87,10 +87,11 @@ test('retrieves a user by email', async () => {
     Key: { email: 'user@example.com' }
   });
 
-  assert.deepEqual(result, {
+  assert.ok(result);
+  assert.deepEqual(result?.toPrimitives(), {
     id: 'user-id',
     email: 'user@example.com',
-    passwordHash: 'hash',
+    passwordHash: 'hashed-value',
     createdAt: new Date('2024-01-01T00:00:00.000Z')
   });
 });

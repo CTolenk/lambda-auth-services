@@ -84,12 +84,12 @@ test('registers a new user and returns the user data', async () => {
 
 test('throws when a user already exists with the same email', async () => {
   const userRepository = new UserRepositorySpy();
-  userRepository.findByEmailReturn = {
+  userRepository.findByEmailReturn = User.create({
     id: 'existing-id',
     email: 'user@example.com',
     passwordHash: 'existing-hash',
     createdAt: new Date()
-  };
+  });
 
   const passwordHasher = new PasswordHasherSpy();
   const uuidGenerator = new UuidGeneratorStub();
