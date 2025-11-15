@@ -1,11 +1,12 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { LoginUserUseCase } from '../use-cases/login-user.use-case';
-import { UserRepository } from '@shared/domain/ports/user-repository.port';
-import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
+import { expect, test } from 'vitest';
+
 import { User } from '@shared/domain/entities/user.entity';
+import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
+import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { LoginUserRequest } from '../../domain/value-objects/login-user-request.vo';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error';
+
+import { LoginUserUseCase } from '../use-cases/login-user.use-case';
 
 class UserRepositorySpy implements UserRepository {
   public findByEmailCalls: string[] = [];
@@ -39,12 +40,12 @@ class PasswordHasherSpy implements PasswordHasher {
 
 test('returns user data when credentials are valid', async () => {
   const repository = new UserRepositorySpy();
-  repository.findByEmailReturn = {
+  repository.findByEmailReturn = User.create({
     id: 'user-id',
     email: 'user@example.com',
     passwordHash: 'stored-hash',
     createdAt: new Date()
-  };
+  });
 
   const passwordHasher = new PasswordHasherSpy();
   passwordHasher.verifyReturnValue = true;
@@ -58,11 +59,11 @@ test('returns user data when credentials are valid', async () => {
 
   const result = await useCase.execute(request);
 
-  assert.deepEqual(repository.findByEmailCalls, ['user@example.com']);
-  assert.deepEqual(passwordHasher.verifyCalls, [
+  expect(repository.findByEmailCalls).toEqual(['user@example.com']);
+  expect(passwordHasher.verifyCalls).toEqual([
     { plainText: 'Secret123', hashed: 'stored-hash' }
   ]);
-  assert.deepEqual(result, { id: 'user-id', email: 'user@example.com' });
+  expect(result).toEqual({ id: 'user-id', email: 'user@example.com' });
 });
 
 test('throws InvalidCredentialsError when user is not found', async () => {
@@ -73,40 +74,36 @@ test('throws InvalidCredentialsError when user is not found', async () => {
 
   const useCase = new LoginUserUseCase(repository, passwordHasher);
 
-  await assert.rejects(
-    () =>
-      useCase.execute(
-        LoginUserRequest.create({
-          email: 'unknown@example.com',
-          password: 'Secret123'
-        })
-      ),
-    (error: unknown) => error instanceof InvalidCredentialsError
-  );
+  await expect(
+    useCase.execute(
+      LoginUserRequest.create({
+        email: 'unknown@example.com',
+        password: 'Secret123'
+      })
+    )
+  ).rejects.toBeInstanceOf(InvalidCredentialsError);
 });
 
 test('throws InvalidCredentialsError when password does not match', async () => {
   const repository = new UserRepositorySpy();
-  repository.findByEmailReturn = {
+  repository.findByEmailReturn = User.create({
     id: 'user-id',
     email: 'user@example.com',
     passwordHash: 'stored-hash',
     createdAt: new Date()
-  };
+  });
 
   const passwordHasher = new PasswordHasherSpy();
   passwordHasher.verifyReturnValue = false;
 
   const useCase = new LoginUserUseCase(repository, passwordHasher);
 
-  await assert.rejects(
-    () =>
-      useCase.execute(
-        LoginUserRequest.create({
-          email: 'user@example.com',
-          password: 'WrongPass123'
-        })
-      ),
-    (error: unknown) => error instanceof InvalidCredentialsError
-  );
+  await expect(
+    useCase.execute(
+      LoginUserRequest.create({
+        email: 'user@example.com',
+        password: 'WrongPass123'
+      })
+    )
+  ).rejects.toBeInstanceOf(InvalidCredentialsError);
 });

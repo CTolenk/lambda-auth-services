@@ -9,14 +9,16 @@ export class DynamoDbUserRepository implements UserRepository {
   ) {}
 
   async save(user: User): Promise<void> {
+    const primitives = user.toPrimitives();
+
     await this.documentClient
       .put({
         TableName: this.tableName,
         Item: {
-          id: user.id,
-          email: user.email,
-          passwordHash: user.passwordHash,
-          createdAt: user.createdAt.toISOString()
+          id: primitives.id,
+          email: primitives.email,
+          passwordHash: primitives.passwordHash,
+          createdAt: primitives.createdAt.toISOString()
         },
         ConditionExpression: 'attribute_not_exists(email)'
       })
@@ -35,11 +37,11 @@ export class DynamoDbUserRepository implements UserRepository {
       return null;
     }
 
-    return {
+    return User.create({
       id: result.Item.id as string,
       email: result.Item.email as string,
       passwordHash: result.Item.passwordHash as string,
       createdAt: new Date(result.Item.createdAt as string)
-    };
+    });
   }
 }

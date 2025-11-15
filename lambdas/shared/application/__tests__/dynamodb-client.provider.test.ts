@@ -1,12 +1,14 @@
-import { test, afterEach } from 'node:test';
-import assert from 'node:assert/strict';
-import { DynamoDbClientProvider } from '../services/dynamodb-client.provider';
-import { AwsDocumentClientFactory } from '../../infrastructure/aws/aws-document-client.factory';
+import { afterEach, expect, test } from 'vitest';
 import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
+
 import {
   DocumentClientFactoryPort,
   DocumentClientLike
 } from '../../domain/ports/document-client-factory.port';
+
+import { DynamoDbClientProvider } from '../services/dynamodb-client.provider';
+
+import { AwsDocumentClientFactory } from '../../infrastructure/aws/aws-document-client.factory';
 
 const resetProvider = () => {
   (DynamoDbClientProvider as unknown as { factory: null }).factory = null;
@@ -30,7 +32,7 @@ test('returns client from custom factory when useFactory is called', () => {
 
   const client = DynamoDbClientProvider.getClient();
 
-  assert.strictEqual(client, fakeClient);
+  expect(client).toBe(fakeClient);
 });
 
 test('lazily resolves factory using AwsDocumentClientFactory with env-provided options', () => {
@@ -49,9 +51,9 @@ test('lazily resolves factory using AwsDocumentClientFactory with env-provided o
 
   const client = DynamoDbClientProvider.getClient();
 
-  assert.strictEqual(client, fakeClient);
-  assert.equal(calls.length, 1);
-  assert.deepEqual(calls[0], {
+  expect(client).toBe(fakeClient);
+  expect(calls).toHaveLength(1);
+  expect(calls[0]).toEqual({
     region: 'us-west-2',
     endpoint: 'http://localhost:9100',
     tls: false
@@ -71,7 +73,7 @@ test('omits options when env vars are not set', () => {
 
   const client = DynamoDbClientProvider.getClient();
 
-  assert.strictEqual(client, fakeClient);
-  assert.equal(calls.length, 1);
-  assert.equal(calls[0], undefined);
+  expect(client).toBe(fakeClient);
+  expect(calls).toHaveLength(1);
+  expect(calls[0]).toBeUndefined();
 });

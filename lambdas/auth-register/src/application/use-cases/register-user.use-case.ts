@@ -1,16 +1,20 @@
-import { UserRepository } from '@shared/domain/ports/user-repository.port';
-import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
-import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
-import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
 import { User } from '@shared/domain/entities/user.entity';
+import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
+import { UserRepository } from '@shared/domain/ports/user-repository.port';
+import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
 import { RegisterUserRequest } from '../../domain/value-objects/register-user-request.vo';
+import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
+
+import { UseCase } from '@shared/application/ports/use-case.port';
 
 interface RegisterUserResult {
   id: string;
   email: string;
 }
 
-export class RegisterUserUseCase {
+export class RegisterUserUseCase
+  implements UseCase<RegisterUserRequest, RegisterUserResult>
+{
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
@@ -27,12 +31,11 @@ export class RegisterUserUseCase {
 
     const passwordHash = await this.passwordHasher.hash(request.password);
 
-    const user: User = {
+    const user = User.create({
       id: this.uuidGenerator.generate(),
       email: normalizedEmail,
-      passwordHash,
-      createdAt: new Date()
-    };
+      passwordHash
+    });
 
     await this.userRepository.save(user);
 

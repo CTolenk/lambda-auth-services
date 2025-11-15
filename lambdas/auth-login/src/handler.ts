@@ -1,12 +1,15 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
-import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
-import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
-import { DynamoDbUserRepository } from '@shared/infrastructure/dynamodb/dynamodb-user.repository';
-import { CryptoPasswordHasher } from '@shared/infrastructure/crypto/password-hasher.adapter';
-import { LoginUserRequest } from './domain/value-objects/login-user-request.vo';
+
 import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
 import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
 import { InvalidCredentialsError } from './domain/errors/invalid-credentials.error';
+import { LoginUserRequest } from './domain/value-objects/login-user-request.vo';
+
+import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
+import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
+
+import { CryptoPasswordHasher } from '@shared/infrastructure/crypto/password-hasher.adapter';
+import { DynamoDbUserRepository } from '@shared/infrastructure/dynamodb/dynamodb-user.repository';
 
 type LoginUserUseCasePort = Pick<LoginUserUseCase, 'execute'>;
 
@@ -29,6 +32,7 @@ const buildUseCase: UseCaseFactory = () => {
 export const createHandler = (useCaseFactory: UseCaseFactory): APIGatewayProxyHandler => {
   return async (event) => {
     try {
+      console.log('Event Incoming', event)
       const rawPayload =
         typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
       const payload =
@@ -90,31 +94,31 @@ export const createHandler = (useCaseFactory: UseCaseFactory): APIGatewayProxyHa
 
 export const handler: APIGatewayProxyHandler = createHandler(buildUseCase);
 
-if (require.main === module) {
-  process.env.USERS_TABLE_NAME =
-    process.env.USERS_TABLE_NAME ?? 'auth-users-local';
-  process.env.AWS_REGION = process.env.AWS_REGION ?? 'us-east-1';
-  process.env.DYNAMODB_ENDPOINT =
-    process.env.DYNAMODB_ENDPOINT ?? 'http://localhost:8000';
-  process.env.AWS_ACCESS_KEY_ID =
-    process.env.AWS_ACCESS_KEY_ID ?? 'LOCALACCESSKEY000001';
-  process.env.AWS_SECRET_ACCESS_KEY =
-    process.env.AWS_SECRET_ACCESS_KEY ?? 'LOCALSECRETKEY000000000000000001';
-
-  const mockEvent = {
-    httpMethod: 'POST',
-    path: '/auth/login',
-    body: JSON.stringify({
-      email: 'local@example.com',
-      password: 'Secret123'
-    })
-  } as Parameters<APIGatewayProxyHandler>[0];
-
-  (async () => {
-    const response = await handler(mockEvent, {} as any, () => {});
-    console.log('Local invocation response:', response);
-  })().catch((error) => {
-    console.error('Local invocation failed:', error);
-    process.exitCode = 1;
-  });
-}
+// if (require.main === module) {
+//   process.env.USERS_TABLE_NAME =
+//     process.env.USERS_TABLE_NAME ?? 'auth-users-local';
+//   process.env.AWS_REGION = process.env.AWS_REGION ?? 'us-east-1';
+//   process.env.DYNAMODB_ENDPOINT =
+//     process.env.DYNAMODB_ENDPOINT ?? 'http://localhost:8000';
+//   process.env.AWS_ACCESS_KEY_ID =
+//     process.env.AWS_ACCESS_KEY_ID ?? 'LOCALACCESSKEY000001';
+//   process.env.AWS_SECRET_ACCESS_KEY =
+//     process.env.AWS_SECRET_ACCESS_KEY ?? 'LOCALSECRETKEY000000000000000001';
+//
+//   const mockEvent = {
+//     httpMethod: 'POST',
+//     path: '/auth/login',
+//     body: JSON.stringify({
+//       email: 'local@example.com',
+//       password: 'Secret123'
+//     })
+//   } as Parameters<APIGatewayProxyHandler>[0];
+//
+//   (async () => {
+//     const response = await handler(mockEvent, {} as any, () => {});
+//     console.log('Local invocation response:', response);
+//   })().catch((error) => {
+//     console.error('Local invocation failed:', error);
+//     process.exitCode = 1;
+//   });
+// }

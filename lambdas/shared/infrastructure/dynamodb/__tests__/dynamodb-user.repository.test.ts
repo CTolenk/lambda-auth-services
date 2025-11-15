@@ -1,7 +1,8 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { DynamoDbUserRepository } from '../dynamodb-user.repository';
+import { expect, test } from 'vitest';
+
 import { User } from '../../../domain/entities/user.entity';
+
+import { DynamoDbUserRepository } from '../dynamodb-user.repository';
 
 type PutParams = {
   TableName: string;
@@ -41,22 +42,22 @@ test('saves a user using put with conditional expression', async () => {
     'UsersTable'
   );
 
-  const user: User = {
+  const user = User.create({
     id: 'user-id',
     email: 'user@example.com',
-    passwordHash: 'hash',
+    passwordHash: 'hashed-value',
     createdAt: new Date('2024-01-01T00:00:00.000Z')
-  };
+  });
 
   await repository.save(user);
 
-  assert.equal(documentClient.putCalls.length, 1);
-  assert.deepEqual(documentClient.putCalls[0], {
+  expect(documentClient.putCalls).toHaveLength(1);
+  expect(documentClient.putCalls[0]).toEqual({
     TableName: 'UsersTable',
     Item: {
       id: 'user-id',
       email: 'user@example.com',
-      passwordHash: 'hash',
+      passwordHash: 'hashed-value',
       createdAt: '2024-01-01T00:00:00.000Z'
     },
     ConditionExpression: 'attribute_not_exists(email)'
@@ -69,7 +70,7 @@ test('retrieves a user by email', async () => {
     Item: {
       id: 'user-id',
       email: 'user@example.com',
-      passwordHash: 'hash',
+      passwordHash: 'hashed-value',
       createdAt: '2024-01-01T00:00:00.000Z'
     }
   };
@@ -81,16 +82,17 @@ test('retrieves a user by email', async () => {
 
   const result = await repository.findByEmail('user@example.com');
 
-  assert.equal(documentClient.getCalls.length, 1);
-  assert.deepEqual(documentClient.getCalls[0], {
+  expect(documentClient.getCalls).toHaveLength(1);
+  expect(documentClient.getCalls[0]).toEqual({
     TableName: 'UsersTable',
     Key: { email: 'user@example.com' }
   });
 
-  assert.deepEqual(result, {
+  expect(result).not.toBeNull();
+  expect(result?.toPrimitives()).toEqual({
     id: 'user-id',
     email: 'user@example.com',
-    passwordHash: 'hash',
+    passwordHash: 'hashed-value',
     createdAt: new Date('2024-01-01T00:00:00.000Z')
   });
 });
@@ -106,5 +108,5 @@ test('returns null when no user found', async () => {
 
   const result = await repository.findByEmail('missing@example.com');
 
-  assert.equal(result, null);
+  expect(result).toBeNull();
 });

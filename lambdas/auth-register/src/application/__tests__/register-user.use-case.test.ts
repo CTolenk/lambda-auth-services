@@ -1,12 +1,13 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { RegisterUserUseCase } from '../use-cases/register-user.use-case';
-import { UserRepository } from '@shared/domain/ports/user-repository.port';
-import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
-import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
-import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
+import { expect, test } from 'vitest';
+
 import { User } from '@shared/domain/entities/user.entity';
+import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
+import { UserRepository } from '@shared/domain/ports/user-repository.port';
+import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
 import { RegisterUserRequest } from '../../domain/value-objects/register-user-request.vo';
+import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
+
+import { RegisterUserUseCase } from '../use-cases/register-user.use-case';
 
 class UserRepositorySpy implements UserRepository {
   public findByEmailCalls: string[] = [];
@@ -66,17 +67,17 @@ test('registers a new user and returns the user data', async () => {
 
   const result = await useCase.execute(request);
 
-  assert.deepEqual(userRepository.findByEmailCalls, ['user@example.com']);
-  assert.deepEqual(passwordHasher.hashCalls, ['Secret123']);
-  assert.equal(userRepository.savedUsers.length, 1);
+  expect(userRepository.findByEmailCalls).toEqual(['user@example.com']);
+  expect(passwordHasher.hashCalls).toEqual(['Secret123']);
+  expect(userRepository.savedUsers).toHaveLength(1);
 
   const savedUser = userRepository.savedUsers[0];
-  assert.equal(savedUser.id, 'generated-uuid');
-  assert.equal(savedUser.email, 'user@example.com');
-  assert.equal(savedUser.passwordHash, 'hashed-password');
-  assert.ok(savedUser.createdAt instanceof Date);
+  expect(savedUser.id).toBe('generated-uuid');
+  expect(savedUser.email).toBe('user@example.com');
+  expect(savedUser.passwordHash).toBe('hashed-password');
+  expect(savedUser.createdAt).toBeInstanceOf(Date);
 
-  assert.deepEqual(result, {
+  expect(result).toEqual({
     id: 'generated-uuid',
     email: 'user@example.com'
   });
@@ -84,12 +85,12 @@ test('registers a new user and returns the user data', async () => {
 
 test('throws when a user already exists with the same email', async () => {
   const userRepository = new UserRepositorySpy();
-  userRepository.findByEmailReturn = {
+  userRepository.findByEmailReturn = User.create({
     id: 'existing-id',
     email: 'user@example.com',
     passwordHash: 'existing-hash',
     createdAt: new Date()
-  };
+  });
 
   const passwordHasher = new PasswordHasherSpy();
   const uuidGenerator = new UuidGeneratorStub();
@@ -100,16 +101,14 @@ test('throws when a user already exists with the same email', async () => {
     uuidGenerator
   );
 
-  await assert.rejects(
-    () =>
-      useCase.execute(
-        RegisterUserRequest.create({
+  await expect(
+    useCase.execute(
+      RegisterUserRequest.create({
         email: 'user@example.com',
         password: 'Secret123'
       })
-      ),
-    (error: unknown) => error instanceof UserAlreadyExistsError
-  );
+    )
+  ).rejects.toBeInstanceOf(UserAlreadyExistsError);
 
-  assert.equal(userRepository.savedUsers.length, 0);
+  expect(userRepository.savedUsers).toHaveLength(0);
 });

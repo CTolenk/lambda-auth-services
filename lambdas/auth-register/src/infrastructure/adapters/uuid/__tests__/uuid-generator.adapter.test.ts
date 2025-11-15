@@ -1,5 +1,5 @@
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { expect, test } from 'vitest';
+
 import { CryptoUuidGenerator } from '../uuid-generator.adapter';
 
 const UUID_V4_REGEX =
@@ -10,9 +10,9 @@ test('generate returns a RFC 4122 version 4 UUID string', () => {
 
   const uuid = generator.generate();
 
-  assert.equal(typeof uuid, 'string');
-  assert.equal(uuid.length, 36);
-  assert.match(uuid, UUID_V4_REGEX);
+  expect(typeof uuid).toBe('string');
+  expect(uuid).toHaveLength(36);
+  expect(uuid).toMatch(UUID_V4_REGEX);
 });
 
 test('generate produces unique identifiers', () => {
@@ -21,5 +21,5 @@ test('generate produces unique identifiers', () => {
   const first = generator.generate();
   const second = generator.generate();
 
-  assert.notEqual(first, second);
+  expect(first).not.toBe(second);
 });
