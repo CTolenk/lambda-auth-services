@@ -1,7 +1,14 @@
-import { APIGatewayProxyHandler } from 'aws-lambda';
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyHandler
+} from 'aws-lambda';
 
 import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
 import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
+import {
+  ApiGatewayBody,
+  extractEventPayload
+} from '@shared/infrastructure/http/api-gateway-body.parser';
 import { RegisterUserUseCase } from '../../../application/use-cases/register-user.use-case';
 import { RegisterUserRequest } from '../../../domain/value-objects/register-user-request.vo';
 import { UserAlreadyExistsError } from '../../../domain/errors/user-already-exists.error';
@@ -11,23 +18,32 @@ type RegisterUserUseCasePort = Pick<RegisterUserUseCase, 'execute'>;
 
 type UseCaseFactory = () => RegisterUserUseCasePort;
 
+type RegisterUserPayload = {
+  email?: unknown;
+  password?: unknown;
+};
+
+type RegisterUserEvent = Omit<APIGatewayProxyEvent, 'body'> &
+  ApiGatewayBody<RegisterUserPayload>;
+
 export const createRegisterUserHandler = (
   useCaseFactory: UseCaseFactory
 ): APIGatewayProxyHandler => {
-  return async (event) => {
+  return async (event: RegisterUserEvent) => {
     try {
       console.log('Event Incoming', event);
-      const rawPayload =
-        typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
-      const payload =
-        rawPayload && typeof rawPayload === 'object' ? rawPayload : {};
+      const payload = extractEventPayload<RegisterUserPayload>(event);
 
       const request = RegisterUserRequest.create({
-        email: (payload as Record<string, unknown>).email,
-        password: (payload as Record<string, unknown>).password
+        email: payload.email,
+        password: payload.password
       });
 
       const result = await useCaseFactory().execute(request);
+      console.log('RegisterUserHandler - success', {
+        userId: result.id,
+        email: result.email
+      });
 
       return {
         statusCode: 201,

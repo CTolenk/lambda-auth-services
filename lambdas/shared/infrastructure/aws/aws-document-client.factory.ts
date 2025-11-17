@@ -12,7 +12,7 @@ import {
 import {
   DocumentClientFactoryPort,
   DocumentClientLike
-} from '../../domain/ports/document-client-factory.port';
+} from '../dynamodb/document-client-factory.port';
 
 type AwsDocumentClientOptions = DynamoDBClientConfig;
 
