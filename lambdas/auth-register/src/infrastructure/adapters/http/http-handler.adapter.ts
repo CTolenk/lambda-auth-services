@@ -5,6 +5,7 @@ import {
 
 import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
 import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
+import { LoggerPort } from '@shared/domain/ports/logger.port';
 import {
   ApiGatewayBody,
   extractEventPayload
@@ -12,7 +13,10 @@ import {
 import { RegisterUserUseCase } from '../../../application/use-cases/register-user.use-case';
 import { RegisterUserRequest } from '../../../domain/value-objects/register-user-request.vo';
 import { UserAlreadyExistsError } from '../../../domain/errors/user-already-exists.error';
-import { resolveRegisterUserUseCase } from '../../container';
+import {
+  resolveLogger,
+  resolveRegisterUserUseCase
+} from '../../container';
 
 type RegisterUserUseCasePort = Pick<RegisterUserUseCase, 'execute'>;
 
@@ -27,11 +31,12 @@ type RegisterUserEvent = Omit<APIGatewayProxyEvent, 'body'> &
   ApiGatewayBody<RegisterUserPayload>;
 
 export const createRegisterUserHandler = (
-  useCaseFactory: UseCaseFactory
+  useCaseFactory: UseCaseFactory,
+  logger: LoggerPort
 ): APIGatewayProxyHandler => {
   return async (event: RegisterUserEvent) => {
     try {
-      console.log('Event Incoming', event);
+      logger.info('RegisterUserHandler - event incoming', { event });
       const payload = extractEventPayload<RegisterUserPayload>(event);
 
       const request = RegisterUserRequest.create({
@@ -40,7 +45,7 @@ export const createRegisterUserHandler = (
       });
 
       const result = await useCaseFactory().execute(request);
-      console.log('RegisterUserHandler - success', {
+      logger.info('RegisterUserHandler - success', {
         userId: result.id,
         email: result.email
       });
@@ -54,7 +59,7 @@ export const createRegisterUserHandler = (
         })
       };
     } catch (error) {
-      console.error('Error registering user', error);
+      logger.error('RegisterUserHandler - error', error);
 
       if (
         error instanceof InvalidEmailError ||
@@ -93,4 +98,4 @@ export const createRegisterUserHandler = (
 };
 
 export const handler: APIGatewayProxyHandler =
-  createRegisterUserHandler(resolveRegisterUserUseCase);
+  createRegisterUserHandler(resolveRegisterUserUseCase, resolveLogger());

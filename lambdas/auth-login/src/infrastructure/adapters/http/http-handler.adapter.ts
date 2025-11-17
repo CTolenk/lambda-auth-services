@@ -5,6 +5,7 @@ import {
 
 import { InvalidEmailError } from '@shared/domain/errors/invalid-email.error';
 import { InvalidPasswordError } from '@shared/domain/errors/invalid-password.error';
+import { LoggerPort } from '@shared/domain/ports/logger.port';
 import {
   ApiGatewayBody,
   extractEventPayload
@@ -14,7 +15,10 @@ import { InvalidCredentialsError } from '../../../domain/errors/invalid-credenti
 
 import { LoginUserUseCase } from '../../../application/use-cases/login-user.use-case';
 
-import { resolveLoginUserUseCase } from '../../container';
+import {
+  resolveLogger,
+  resolveLoginUserUseCase
+} from '../../container';
 
 type LoginUserUseCasePort = Pick<LoginUserUseCase, 'execute'>;
 
@@ -29,11 +33,12 @@ type LoginUserEvent = Omit<APIGatewayProxyEvent, 'body'> &
   ApiGatewayBody<LoginUserPayload>;
 
 export const createLoginUserHandler = (
-  useCaseFactory: UseCaseFactory
+  useCaseFactory: UseCaseFactory,
+  logger: LoggerPort
 ): APIGatewayProxyHandler => {
   return async (event: LoginUserEvent) => {
     try {
-      console.log('Event Incoming', event);
+      logger.info('LoginUserHandler - event incoming', { event });
       const payload = extractEventPayload<LoginUserPayload>(event);
 
       const request = LoginUserRequest.create({
@@ -42,7 +47,7 @@ export const createLoginUserHandler = (
       });
 
       const result = await useCaseFactory().execute(request);
-      console.log('LoginUserHandler - success', {
+      logger.info('LoginUserHandler - success', {
         userId: result.id,
         email: result.email
       });
@@ -56,7 +61,7 @@ export const createLoginUserHandler = (
         })
       };
     } catch (error) {
-      console.error('Error logging in user', error);
+      logger.error('LoginUserHandler - error', error);
 
       if (
         error instanceof InvalidEmailError ||
@@ -95,4 +100,4 @@ export const createLoginUserHandler = (
 };
 
 export const handler: APIGatewayProxyHandler =
-  createLoginUserHandler(resolveLoginUserUseCase);
+  createLoginUserHandler(resolveLoginUserUseCase, resolveLogger());

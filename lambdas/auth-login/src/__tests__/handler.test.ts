@@ -13,6 +13,7 @@ import { LoginUserResult } from '../application/use-cases/login-user.use-case';
 import { createHandler, handler } from '../index';
 import { DynamoDbClientProvider } from '@shared/infrastructure/dynamodb/dynamodb-client.provider';
 import { CryptoPasswordHasher } from '@shared/infrastructure/crypto/password-hasher.adapter';
+import { LoggerPort } from '@shared/domain/ports/logger.port';
 
 interface LoginUserUseCasePort {
   execute(request: LoginUserRequest): Promise<LoginUserResult>;
@@ -54,6 +55,16 @@ class DocumentClientStub {
   }
 }
 
+class LoggerStub implements LoggerPort {
+  info(): void {
+    // noop
+  }
+
+  error(): void {
+    // noop
+  }
+}
+
 const buildEvent = (body: unknown): APIGatewayProxyEvent => ({
   body: typeof body === 'string' ? body : JSON.stringify(body),
   headers: {},
@@ -91,7 +102,8 @@ afterEach(() => {
 
 test('returns 400 when payload validation fails', async () => {
   const useCase = new LoginUserUseCaseSpy();
-  const handler = createHandler(() => useCase);
+  const logger = new LoggerStub();
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(handler, buildEvent('{}'));
 
@@ -101,7 +113,8 @@ test('returns 400 when payload validation fails', async () => {
 
 test('returns 400 when body is invalid JSON', async () => {
   const useCase = new LoginUserUseCaseSpy();
-  const handler = createHandler(() => useCase);
+  const logger = new LoggerStub();
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(handler, buildEvent('not-json'));
 
@@ -113,7 +126,8 @@ test('returns 401 when use case throws InvalidCredentialsError', async () => {
   const useCase = new LoginUserUseCaseSpy();
   useCase.error = new InvalidCredentialsError();
 
-  const handler = createHandler(() => useCase);
+  const logger = new LoggerStub();
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(
     handler,
@@ -128,7 +142,8 @@ test('returns 200 and body when credentials are valid', async () => {
   const useCase = new LoginUserUseCaseSpy();
   useCase.result = { id: 'generated-id', email: 'user@example.com' };
 
-  const handler = createHandler(() => useCase);
+  const logger = new LoggerStub();
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(
     handler,
@@ -148,7 +163,8 @@ test('returns 500 when an unexpected error occurs', async () => {
   const useCase = new LoginUserUseCaseSpy();
   useCase.error = new Error('boom');
 
-  const handler = createHandler(() => useCase);
+  const logger = new LoggerStub();
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(
     handler,

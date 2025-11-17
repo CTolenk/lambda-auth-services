@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 
 import { User } from '@shared/domain/entities/user.entity';
+import { LoggerPort } from '@shared/domain/ports/logger.port';
 import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
 import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
@@ -49,15 +50,27 @@ class UuidGeneratorStub implements UuidGenerator {
   }
 }
 
+class LoggerStub implements LoggerPort {
+  info(): void {
+    // noop
+  }
+
+  error(): void {
+    // noop
+  }
+}
+
 test('registers a new user and returns the user data', async () => {
   const userRepository = new UserRepositorySpy();
   const passwordHasher = new PasswordHasherSpy();
   const uuidGenerator = new UuidGeneratorStub();
+  const logger = new LoggerStub();
 
   const useCase = new RegisterUserUseCase(
     userRepository,
     passwordHasher,
-    uuidGenerator
+    uuidGenerator,
+    logger
   );
 
   const request = RegisterUserRequest.create({
@@ -94,11 +107,13 @@ test('throws when a user already exists with the same email', async () => {
 
   const passwordHasher = new PasswordHasherSpy();
   const uuidGenerator = new UuidGeneratorStub();
+  const logger = new LoggerStub();
 
   const useCase = new RegisterUserUseCase(
     userRepository,
     passwordHasher,
-    uuidGenerator
+    uuidGenerator,
+    logger
   );
 
   await expect(
