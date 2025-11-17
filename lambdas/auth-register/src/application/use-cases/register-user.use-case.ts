@@ -5,7 +5,7 @@ import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.
 import { RegisterUserRequest } from '../../domain/value-objects/register-user-request.vo';
 import { UuidGenerator } from '../../domain/ports/uuid-generator.port';
 
-import { UseCase } from '@shared/application/ports/use-case.port';
+import { UseCase } from '@shared/domain/ports/use-case.port';
 
 interface RegisterUserResult {
   id: string;

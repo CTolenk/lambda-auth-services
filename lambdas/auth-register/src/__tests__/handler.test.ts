@@ -10,7 +10,7 @@ import { RegisterUserRequest } from '../domain/value-objects/register-user-reque
 import { RegisterUserResult } from '../application/use-cases/register-user.use-case';
 
 import { createHandler, handler } from '../index';
-import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
+import { DynamoDbClientProvider } from '@shared/infrastructure/dynamodb/dynamodb-client.provider';
 
 interface RegisterUserUseCasePort {
   execute(request: RegisterUserRequest): Promise<RegisterUserResult>;

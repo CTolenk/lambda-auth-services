@@ -1,5 +1,5 @@
 import { RegisterUserUseCase } from '../application/use-cases/register-user.use-case';
-import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
+import { DynamoDbClientProvider } from '@shared/infrastructure/dynamodb/dynamodb-client.provider';
 import { DynamoDbUserRepository } from '@shared/infrastructure/dynamodb/dynamodb-user.repository';
 import { CryptoPasswordHasher } from '@shared/infrastructure/crypto/password-hasher.adapter';
 import { CryptoUuidGenerator } from './adapters/uuid/uuid-generator.adapter';
