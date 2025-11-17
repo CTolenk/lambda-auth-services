@@ -5,7 +5,7 @@ import {
   DocumentClientLike
 } from '../../domain/ports/document-client-factory.port';
 
-import { AwsDocumentClientFactory } from '../../infrastructure/aws/aws-document-client.factory';
+import { AwsDocumentClientFactory } from '../aws/aws-document-client.factory';
 
 type DynamoDbClientOptions = DynamoDBClientConfig;
 

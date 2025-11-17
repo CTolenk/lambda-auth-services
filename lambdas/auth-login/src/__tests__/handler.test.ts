@@ -11,7 +11,7 @@ import { LoginUserRequest } from '../domain/value-objects/login-user-request.vo'
 import { LoginUserResult } from '../application/use-cases/login-user.use-case';
 
 import { createHandler, handler } from '../index';
-import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
+import { DynamoDbClientProvider } from '@shared/infrastructure/dynamodb/dynamodb-client.provider';
 import { CryptoPasswordHasher } from '@shared/infrastructure/crypto/password-hasher.adapter';
 
 interface LoginUserUseCasePort {

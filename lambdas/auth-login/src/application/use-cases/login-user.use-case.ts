@@ -4,7 +4,7 @@ import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { LoginUserRequest } from '../../domain/value-objects/login-user-request.vo';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error';
 
-import { UseCase } from '@shared/application/ports/use-case.port';
+import { UseCase } from '@shared/domain/ports/use-case.port';
 
 interface LoginUserResult {
   id: string;
