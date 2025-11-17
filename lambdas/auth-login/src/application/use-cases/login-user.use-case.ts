@@ -20,6 +20,9 @@ export class LoginUserUseCase
   ) {}
 
   async execute(request: LoginUserRequest): Promise<LoginUserResult> {
+    console.log('LoginUserUseCase.execute - start', {
+      email: request.email
+    });
     const user = await this.userRepository.findByEmail(request.email);
 
     if (!user) {
@@ -34,6 +37,10 @@ export class LoginUserUseCase
     if (!passwordMatches) {
       throw new InvalidCredentialsError();
     }
+
+    console.log('LoginUserUseCase.execute - success', {
+      userId: user.id
+    });
 
     return this.mapToResult(user);
   }

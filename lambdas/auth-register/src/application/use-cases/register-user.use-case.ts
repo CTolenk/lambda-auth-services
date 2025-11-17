@@ -22,6 +22,9 @@ export class RegisterUserUseCase
   ) {}
 
   async execute(request: RegisterUserRequest): Promise<RegisterUserResult> {
+    console.log('RegisterUserUseCase.execute - start', {
+      email: request.email
+    });
     const normalizedEmail = request.email;
 
     const existingUser = await this.userRepository.findByEmail(normalizedEmail);
@@ -38,6 +41,9 @@ export class RegisterUserUseCase
     });
 
     await this.userRepository.save(user);
+    console.log('RegisterUserUseCase.execute - user persisted', {
+      userId: user.id
+    });
 
     return {
       id: user.id,
