@@ -1,1 +1,4 @@
-export { handler } from './handler';
+export {
+  createRegisterUserHandler as createHandler,
+  handler
+} from './infrastructure/adapters/http/http-handler.adapter';

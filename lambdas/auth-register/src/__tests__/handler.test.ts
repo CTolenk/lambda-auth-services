@@ -9,7 +9,7 @@ import { UserAlreadyExistsError } from '../domain/errors/user-already-exists.err
 import { RegisterUserRequest } from '../domain/value-objects/register-user-request.vo';
 import { RegisterUserResult } from '../application/use-cases/register-user.use-case';
 
-import { createHandler, handler } from '../handler';
+import { createHandler, handler } from '../index';
 import { DynamoDbClientProvider } from '@shared/application/services/dynamodb-client.provider';
 
 interface RegisterUserUseCasePort {
