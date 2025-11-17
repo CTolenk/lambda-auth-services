@@ -1,4 +1,5 @@
 import { User } from '@shared/domain/entities/user.entity';
+import { LoggerPort } from '@shared/domain/ports/logger.port';
 import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
 import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { UserAlreadyExistsError } from '../../domain/errors/user-already-exists.error';
@@ -18,11 +19,12 @@ export class RegisterUserUseCase
   constructor(
     private readonly userRepository: UserRepository,
     private readonly passwordHasher: PasswordHasher,
-    private readonly uuidGenerator: UuidGenerator
+    private readonly uuidGenerator: UuidGenerator,
+    private readonly logger: LoggerPort
   ) {}
 
   async execute(request: RegisterUserRequest): Promise<RegisterUserResult> {
-    console.log('RegisterUserUseCase.execute - start', {
+    this.logger.info('RegisterUserUseCase.execute - start', {
       email: request.email
     });
     const normalizedEmail = request.email;
@@ -41,7 +43,7 @@ export class RegisterUserUseCase
     });
 
     await this.userRepository.save(user);
-    console.log('RegisterUserUseCase.execute - user persisted', {
+    this.logger.info('RegisterUserUseCase.execute - user persisted', {
       userId: user.id
     });
 

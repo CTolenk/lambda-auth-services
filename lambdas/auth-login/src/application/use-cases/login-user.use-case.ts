@@ -1,4 +1,5 @@
 import { User } from '@shared/domain/entities/user.entity';
+import { LoggerPort } from '@shared/domain/ports/logger.port';
 import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
 import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { LoginUserRequest } from '../../domain/value-objects/login-user-request.vo';
@@ -16,11 +17,12 @@ export class LoginUserUseCase
 {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly passwordHasher: PasswordHasher
+    private readonly passwordHasher: PasswordHasher,
+    private readonly logger: LoggerPort
   ) {}
 
   async execute(request: LoginUserRequest): Promise<LoginUserResult> {
-    console.log('LoginUserUseCase.execute - start', {
+    this.logger.info('LoginUserUseCase.execute - start', {
       email: request.email
     });
     const user = await this.userRepository.findByEmail(request.email);
@@ -38,7 +40,7 @@ export class LoginUserUseCase
       throw new InvalidCredentialsError();
     }
 
-    console.log('LoginUserUseCase.execute - success', {
+    this.logger.info('LoginUserUseCase.execute - success', {
       userId: user.id
     });
 

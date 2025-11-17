@@ -11,6 +11,7 @@ import { RegisterUserResult } from '../application/use-cases/register-user.use-c
 
 import { createHandler, handler } from '../index';
 import { DynamoDbClientProvider } from '@shared/infrastructure/dynamodb/dynamodb-client.provider';
+import { LoggerPort } from '@shared/domain/ports/logger.port';
 
 interface RegisterUserUseCasePort {
   execute(request: RegisterUserRequest): Promise<RegisterUserResult>;
@@ -55,6 +56,16 @@ class DocumentClientStub {
   }
 }
 
+class LoggerStub implements LoggerPort {
+  info(): void {
+    // noop
+  }
+
+  error(): void {
+    // noop
+  }
+}
+
 const buildEvent = (body: unknown): APIGatewayProxyEvent => ({
   body: typeof body === 'string' ? body : JSON.stringify(body),
   headers: {},
@@ -93,8 +104,9 @@ afterEach(() => {
 test('returns 201 when registration succeeds', async () => {
   const useCase = new RegisterUserUseCaseSpy();
   useCase.result = { id: 'user-id', email: 'user@example.com' };
+  const logger = new LoggerStub();
 
-  const handler = createHandler(() => useCase);
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(
     handler,
@@ -142,7 +154,8 @@ test('returns 500 when USERS_TABLE_NAME is missing', async () => {
 
 test('returns 400 when payload validation fails', async () => {
   const useCase = new RegisterUserUseCaseSpy();
-  const handler = createHandler(() => useCase);
+  const logger = new LoggerStub();
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(handler, buildEvent('{}'));
 
@@ -152,7 +165,8 @@ test('returns 400 when payload validation fails', async () => {
 
 test('returns 400 when payload is invalid JSON', async () => {
   const useCase = new RegisterUserUseCaseSpy();
-  const handler = createHandler(() => useCase);
+  const logger = new LoggerStub();
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(handler, buildEvent('not-json'));
 
@@ -164,7 +178,8 @@ test('returns 409 when user already exists', async () => {
   const useCase = new RegisterUserUseCaseSpy();
   useCase.error = new UserAlreadyExistsError('user@example.com');
 
-  const handler = createHandler(() => useCase);
+  const logger = new LoggerStub();
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(
     handler,
@@ -182,7 +197,8 @@ test('returns 500 when an unexpected error occurs', async () => {
   const useCase = new RegisterUserUseCaseSpy();
   useCase.error = new Error('boom');
 
-  const handler = createHandler(() => useCase);
+  const logger = new LoggerStub();
+  const handler = createHandler(() => useCase, logger);
 
   const response = await invokeHandler(
     handler,
