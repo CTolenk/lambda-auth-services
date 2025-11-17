@@ -1,4 +1,4 @@
-# Lambda Auth Service
+# Lambda Auth Service 
 
 Lambda-oriented authentication service following a hexagonal architecture. Each Lambda lives in `lambdas/` with shared utilities under `lambdas/shared/`.
 

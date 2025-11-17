@@ -1,4 +1,4 @@
-import { DocumentClientLike } from '../../domain/ports/document-client-factory.port';
+import { DocumentClientLike } from './document-client-factory.port';
 import { UserRepository } from '../../domain/ports/user-repository.port';
 import { User } from '../../domain/entities/user.entity';
 

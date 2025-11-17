@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 
 import { User } from '@shared/domain/entities/user.entity';
+import { LoggerPort } from '@shared/domain/ports/logger.port';
 import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
 import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { LoginUserRequest } from '../../domain/value-objects/login-user-request.vo';
@@ -38,6 +39,16 @@ class PasswordHasherSpy implements PasswordHasher {
   }
 }
 
+class LoggerStub implements LoggerPort {
+  info(): void {
+    // noop
+  }
+
+  error(): void {
+    // noop
+  }
+}
+
 test('returns user data when credentials are valid', async () => {
   const repository = new UserRepositorySpy();
   repository.findByEmailReturn = User.create({
@@ -50,7 +61,8 @@ test('returns user data when credentials are valid', async () => {
   const passwordHasher = new PasswordHasherSpy();
   passwordHasher.verifyReturnValue = true;
 
-  const useCase = new LoginUserUseCase(repository, passwordHasher);
+  const logger = new LoggerStub();
+  const useCase = new LoginUserUseCase(repository, passwordHasher, logger);
 
   const request = LoginUserRequest.create({
     email: 'User@example.com',
@@ -72,7 +84,8 @@ test('throws InvalidCredentialsError when user is not found', async () => {
 
   const passwordHasher = new PasswordHasherSpy();
 
-  const useCase = new LoginUserUseCase(repository, passwordHasher);
+  const logger = new LoggerStub();
+  const useCase = new LoginUserUseCase(repository, passwordHasher, logger);
 
   await expect(
     useCase.execute(
@@ -96,7 +109,8 @@ test('throws InvalidCredentialsError when password does not match', async () => 
   const passwordHasher = new PasswordHasherSpy();
   passwordHasher.verifyReturnValue = false;
 
-  const useCase = new LoginUserUseCase(repository, passwordHasher);
+  const logger = new LoggerStub();
+  const useCase = new LoginUserUseCase(repository, passwordHasher, logger);
 
   await expect(
     useCase.execute(

@@ -4,11 +4,11 @@ import type { DynamoDBClientConfig } from '@aws-sdk/client-dynamodb';
 import {
   DocumentClientFactoryPort,
   DocumentClientLike
-} from '../../domain/ports/document-client-factory.port';
+} from '../document-client-factory.port';
 
-import { DynamoDbClientProvider } from '../services/dynamodb-client.provider';
+import { DynamoDbClientProvider } from '../dynamodb-client.provider';
 
-import { AwsDocumentClientFactory } from '../../infrastructure/aws/aws-document-client.factory';
+import { AwsDocumentClientFactory } from '../../aws/aws-document-client.factory';
 
 const resetProvider = () => {
   (DynamoDbClientProvider as unknown as { factory: null }).factory = null;

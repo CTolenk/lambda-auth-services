@@ -1,10 +1,11 @@
 import { User } from '@shared/domain/entities/user.entity';
+import { LoggerPort } from '@shared/domain/ports/logger.port';
 import { PasswordHasher } from '@shared/domain/ports/password-hasher.port';
 import { UserRepository } from '@shared/domain/ports/user-repository.port';
 import { LoginUserRequest } from '../../domain/value-objects/login-user-request.vo';
 import { InvalidCredentialsError } from '../../domain/errors/invalid-credentials.error';
 
-import { UseCase } from '@shared/application/ports/use-case.port';
+import { UseCase } from '@shared/domain/ports/use-case.port';
 
 interface LoginUserResult {
   id: string;
@@ -16,10 +17,14 @@ export class LoginUserUseCase
 {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly passwordHasher: PasswordHasher
+    private readonly passwordHasher: PasswordHasher,
+    private readonly logger: LoggerPort
   ) {}
 
   async execute(request: LoginUserRequest): Promise<LoginUserResult> {
+    this.logger.info('LoginUserUseCase.execute - start', {
+      email: request.email
+    });
     const user = await this.userRepository.findByEmail(request.email);
 
     if (!user) {
@@ -34,6 +39,10 @@ export class LoginUserUseCase
     if (!passwordMatches) {
       throw new InvalidCredentialsError();
     }
+
+    this.logger.info('LoginUserUseCase.execute - success', {
+      userId: user.id
+    });
 
     return this.mapToResult(user);
   }
